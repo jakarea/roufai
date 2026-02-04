@@ -65,7 +65,7 @@ class AuthController extends Controller
         return match($user->role) {
             'admin' => redirect('/admin'),
             'instructor' => redirect('/instructor'),
-            'student' => redirect('/'), // Will be student frontend
+            'student' => redirect('/student/dashboard'),
             default => redirect('/'),
         };
     }

@@ -92,7 +92,7 @@ class LessonResource extends Resource
                 Forms\Components\Section::make('Video Content')
                     ->description('Embed a video from YouTube or Vimeo')
                     ->schema([
-                        Forms\Components\Select::make('video_type')
+                        Forms\Components\Select::make('video_provider')
                             ->label('Video Platform')
                             ->options([
                                 'youtube' => 'YouTube',
@@ -102,29 +102,22 @@ class LessonResource extends Resource
                             ->default('youtube')
                             ->live()
                             ->columnSpan(1),
-                        Forms\Components\TextInput::make('video_url')
-                            ->label('Video URL')
-                            ->url()
+                        Forms\Components\TextInput::make('video_id')
+                            ->label('Video ID')
                             ->required()
-                            ->placeholder(fn (callable $get) => $get('video_type') === 'youtube'
-                                ? 'https://www.youtube.com/watch?v=...'
-                                : 'https://vimeo.com/...')
-                            ->helperText('Paste the full video URL here')
+                            ->placeholder(fn (callable $get) => $get('video_provider') === 'youtube'
+                                ? 'YouTube Video ID (e.g., dQw4w9WgXcQ)'
+                                : 'Vimeo Video ID (e.g., 123456789)')
+                            ->helperText(fn (callable $get) => $get('video_provider') === 'youtube'
+                                ? 'Paste the YouTube video ID only (from https://youtube.com/watch?v=VIDEO_ID)'
+                                : 'Paste the Vimeo video ID only (from https://vimeo.com/VIDEO_ID)')
                             ->columnSpan(2),
-                        Forms\Components\Textarea::make('video_embed_code')
-                            ->label('Embed Code (Optional)')
+                        Forms\Components\Textarea::make('description')
+                            ->label('Description')
                             ->rows(3)
-                            ->placeholder('<iframe>...</iframe>')
-                            ->helperText('Or paste custom embed code here (overrides video URL)')
+                            ->placeholder('Brief description of this lesson')
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('duration_minutes')
-                            ->label('Duration (minutes)')
-                            ->numeric()
-                            ->minValue(1)
-                            ->placeholder('e.g., 15')
-                            ->helperText('Approximate video duration in minutes')
-                            ->columnSpan(1),
-                        Forms\Components\Toggle::make('is_preview')
+                        Forms\Components\Toggle::make('is_free_preview')
                             ->label('Free Preview')
                             ->helperText('Allow students to watch this lesson without enrolling')
                             ->default(false)
@@ -152,23 +145,19 @@ class LessonResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-                Tables\Columns\BadgeColumn::make('video_type')
+                Tables\Columns\BadgeColumn::make('video_provider')
+                    ->label('Platform')
                     ->colors([
                         'danger' => 'youtube',
                         'primary' => 'vimeo',
                     ]),
-                Tables\Columns\IconColumn::make('is_preview')
+                Tables\Columns\IconColumn::make('is_free_preview')
                     ->label('Preview')
                     ->boolean()
                     ->trueIcon('heroicon-o-eye')
                     ->falseIcon('heroicon-o-eye-slash')
                     ->trueColor('success')
                     ->falseColor('gray')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('duration_minutes')
-                    ->label('Duration')
-                    ->formatStateUsing(fn ($state): string => $state ? "{$state} min" : '-')
-                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('order_index')
                     ->label('Order')
@@ -192,12 +181,13 @@ class LessonResource extends Resource
                             });
                         }
                     ),
-                Tables\Filters\SelectFilter::make('video_type')
+                Tables\Filters\SelectFilter::make('video_provider')
+                    ->label('Platform')
                     ->options([
                         'youtube' => 'YouTube',
                         'vimeo' => 'Vimeo',
                     ]),
-                Tables\Filters\TernaryFilter::make('is_preview')
+                Tables\Filters\TernaryFilter::make('is_free_preview')
                     ->label('Free Preview')
                     ->nullable(),
             ])
