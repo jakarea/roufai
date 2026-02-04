@@ -76,7 +76,7 @@ class ReviewResource extends Resource
                     ->label('Student')
                     ->searchable()
                     ->sortable()
-                    ->description(fn (Review $record): string => $record->user->email)
+                    ->description(fn ($record): string => $record->user->email ?? 'N/A')
                     ->badge()
                     ->color('primary'),
                 Tables\Columns\TextColumn::make('course.title')
@@ -84,7 +84,7 @@ class ReviewResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(30)
-                    ->tooltip(fn (Review $record): string => $record->course->title)
+                    ->tooltip(fn ($record): string => $record->course->title ?? 'N/A')
                     ->wrap(),
                 Tables\Columns\TextColumn::make('rating')
                     ->label('Rating')
@@ -95,12 +95,7 @@ class ReviewResource extends Resource
                     ->label('Comment')
                     ->searchable()
                     ->limit(50)
-                    ->tooltip(function (Review $record): ?string {
-                        if (strlen($record->comment) > 50) {
-                            return $record->comment;
-                        }
-                        return null;
-                    })
+                    ->tooltip(fn ($record): ?string => strlen($record->comment ?? '') > 50 ? $record->comment : null)
                     ->wrap()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -121,11 +116,9 @@ class ReviewResource extends Resource
                         '2' => '2 Stars',
                         '1' => '1 Star',
                     ])
-                    ->query(function (Builder $query, array $data) {
-                        if (isset($data['value'])) {
-                            $query->where('rating', $data['value']);
-                        }
-                    }),
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when(isset($data['value']), fn ($q) => $q->where('rating', $data['value']))
+                    ),
                 Tables\Filters\SelectFilter::make('course')
                     ->relationship('course', 'title')
                     ->label('Filter by Course')
@@ -153,7 +146,7 @@ class ReviewResource extends Resource
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->action(function (Review $record) {
+                    ->action(function ($record) {
                         $record->delete();
                         \Filament\Notifications\Notification::make()
                             ->title('Review Deleted')

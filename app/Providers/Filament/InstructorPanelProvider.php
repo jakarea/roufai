@@ -34,7 +34,6 @@ class InstructorPanelProvider extends PanelProvider
             ->brandLogoHeight('3.25rem')
             ->favicon(asset('images/favicon.ico'))
             ->unsavedChangesAlerts()
-            ->login()
             ->font('Lato')
             ->sidebarCollapsibleOnDesktop()
             ->collapsedSidebarWidth('4rem')

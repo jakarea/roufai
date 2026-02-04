@@ -10,7 +10,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CourseResource extends Resource
 {
@@ -97,21 +96,21 @@ class CourseResource extends Resource
                     ->sortable()
                     ->label('Title')
                     ->weight('bold')
-                    ->description(fn (Course $record): string => $record->category->name)
+                    ->description(fn ($record): string => $record->category?->name ?? 'N/A')
                     ->wrap(),
-                Tables\Columns\TextColumn::make('instructor.name')
+                Tables\Columns\TextColumn::make('instructor_id')
                     ->label('Instructor')
+                    ->formatStateUsing(fn ($state, $record): string => $record->instructor?->name ?? 'N/A')
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('warning'),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Price')
-                    ->money('BDT')
                     ->sortable()
-                    ->formatStateUsing(fn ($state): string => $state ? '৳' . number_format($state) : 'Free')
+                    ->formatStateUsing(fn ($state): string => $state && floatval($state) > 0 ? '৳' . number_format(floatval($state)) : 'Free')
                     ->badge()
-                    ->color(fn ($state): string => $state > 0 ? 'success' : 'primary'),
+                    ->color(fn ($state): string => $state && floatval($state) > 0 ? 'success' : 'primary'),
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Status')
                     ->boolean()
@@ -119,12 +118,11 @@ class CourseResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->sortable()
-                    ->label(fn ($state): string => $state ? 'Published' : 'Draft'),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('enrollments_count')
                     ->label('Students')
-                    ->counts('enrollments')
                     ->sortable()
+                    ->formatStateUsing(fn ($state): string => (string) ($state ?? 0))
                     ->badge()
                     ->color('info'),
                 Tables\Columns\TextColumn::make('reviews_avg_rating')
@@ -132,9 +130,10 @@ class CourseResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color('warning')
-                    ->formatStateUsing(fn ($record): string => $record->reviews()->avg('rating')
-                        ? number_format($record->reviews()->avg('rating'), 1) . ' ★'
-                        : 'N/A'),
+                    ->formatStateUsing(fn ($state): string => $state && floatval($state) > 0
+                        ? number_format(floatval($state), 1) . ' ★'
+                        : 'N/A')
+                    ->default('N/A'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('M j, Y')
                     ->sortable()
@@ -142,14 +141,9 @@ class CourseResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('instructor')
-                    ->relationship('instructor', 'name')
-                    ->label('Filter by Instructor')
-                    ->searchable()
-                    ->preload(),
-                Tables\Filters\SelectFilter::make('category')
+                Tables\Filters\SelectFilter::make('category_id')
+                    ->label('Category')
                     ->relationship('category', 'name')
-                    ->label('Filter by Category')
                     ->searchable()
                     ->preload(),
                 Tables\Filters\TernaryFilter::make('is_published')
@@ -163,13 +157,12 @@ class CourseResource extends Resource
                         'free' => 'Free',
                         'paid' => 'Paid',
                     ])
-                    ->query(function (Builder $query, array $data) {
-                        if (isset($data['value']) && $data['value'] === 'free') {
-                            $query->whereNull('price');
-                        } elseif (isset($data['value']) && $data['value'] === 'paid') {
-                            $query->whereNotNull('price')->where('price', '>', 0);
-                        }
-                    }),
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when(isset($data['value']) && $data['value'] === 'free', fn ($q) => $q->where(function($q) {
+                            $q->whereNull('price')->orWhere('price', 0);
+                        }))
+                        ->when(isset($data['value']) && $data['value'] === 'paid', fn ($q) => $q->whereNotNull('price')->where('price', '>', 0))
+                    ),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -178,8 +171,8 @@ class CourseResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn (Course $record): bool => $record->is_published)
-                    ->action(function (Course $record) {
+                    ->visible(fn ($record): bool => $record->is_published ?? false)
+                    ->action(function ($record) {
                         $record->update(['is_published' => false]);
                         \Filament\Notifications\Notification::make()
                             ->title('Course Unpublished')
@@ -215,5 +208,13 @@ class CourseResource extends Resource
             'index' => Pages\ListCourses::route('/'),
             'view' => Pages\ViewCourse::route('/{record}'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['category', 'instructor'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('enrollments');
     }
 }
