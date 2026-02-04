@@ -25,12 +25,21 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    protected static ?string $navigationGroup = 'User Management';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('User Information')
                     ->schema([
+                        Forms\Components\FileUpload::make('avatar_url')
+                            ->label('Avatar')
+                            ->image()
+                            ->avatar()
+                            ->directory('avatars')
+                            ->maxSize(2048)
+                            ->columnSpan(1),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
@@ -40,6 +49,15 @@ class UserResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
+                            ->columnSpan(2),
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Phone Number')
+                            ->tel()
+                            ->maxLength(20)
+                            ->columnSpan(1),
+                        Forms\Components\Textarea::make('address')
+                            ->label('Address')
+                            ->rows(2)
                             ->columnSpan(2),
                         Forms\Components\Select::make('role')
                             ->options([
@@ -91,15 +109,27 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('avatar_url')
+                    ->label('Avatar')
+                    ->circular()
+                    ->defaultImageUrl(fn ($record) => url('https://ui-avatars.com/api/?name=' . urlencode($record->name) . '&background=6366f1&color=fff&size=128'))
+                    ->size(40)
+                    ->url(fn ($state) => $state ? \Storage::url($state) : null),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->label('Name'),
+                    ->label('Name')
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->sortable()
                     ->label('Email')
-                    ->copyable(),
+                    ->copyable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('Phone')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\BadgeColumn::make('role')
                     ->colors([
                         'success' => 'admin',
@@ -114,11 +144,14 @@ class UserResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('courses_count')
                     ->label('Courses')
                     ->counts('courses')
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('M j, Y')
                     ->sortable()

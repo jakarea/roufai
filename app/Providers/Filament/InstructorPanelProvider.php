@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Instructor\Pages\InstructorProfile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,6 +11,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Navigation\MenuItem;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -23,15 +25,36 @@ class InstructorPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->default()
             ->id('instructor')
             ->path('instructor')
+            ->brandName('Rouf AI LMS - Instructor')
+            ->brandLogo(asset('images/logo.webp'))
+            ->darkModeBrandLogo(asset('images/logo-white.webp'))
+            ->brandLogoHeight('3.25rem')
+            ->favicon(asset('images/favicon.ico'))
+            ->unsavedChangesAlerts()
+            ->login()
+            ->font('Lato')
+            ->sidebarCollapsibleOnDesktop()
+            ->collapsedSidebarWidth('4rem')
+            ->sidebarWidth('17rem')
+            ->authGuard('web')
+            ->darkMode(true)
+            ->maxContentWidth('full')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#e850ff',
+                'danger' => Color::Rose,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
             ])
             ->discoverResources(in: app_path('Filament/Instructor/Resources'), for: 'App\\Filament\\Instructor\\Resources')
             ->discoverPages(in: app_path('Filament/Instructor/Pages'), for: 'App\\Filament\\Instructor\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                InstructorProfile::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Instructor/Widgets'), for: 'App\\Filament\\Instructor\\Widgets')
             ->widgets([
@@ -51,6 +74,12 @@ class InstructorPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Profile')
+                    ->url(fn (): string => InstructorProfile::getUrl())
+                    ->icon('heroicon-o-user-circle'),
             ]);
     }
 }

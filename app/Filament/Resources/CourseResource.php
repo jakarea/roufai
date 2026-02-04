@@ -26,6 +26,8 @@ class CourseResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    protected static ?string $navigationGroup = 'Course Management';
+
     // Read-only for admins - no create/edit pages
     public static function canCreate(): bool
     {

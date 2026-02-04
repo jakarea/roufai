@@ -25,6 +25,8 @@ class ReviewResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
+    protected static ?string $navigationGroup = 'Content Moderation';
+
     // Moderation only - no create/edit
     public static function canCreate(): bool
     {
