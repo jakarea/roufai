@@ -20,6 +20,10 @@ class Lesson extends Model
         'order_index',
     ];
 
+    protected $appends = [
+        'video_url',
+    ];
+
     protected $casts = [
         'is_free_preview' => 'boolean',
         'order_index' => 'integer',
@@ -53,5 +57,23 @@ class Lesson extends Model
         }
 
         return '';
+    }
+
+    /**
+     * Get the full video URL (for frontend use)
+     */
+    public function getVideoUrlAttribute(): ?string
+    {
+        if (!$this->video_provider || !$this->video_id) {
+            return null;
+        }
+
+        if ($this->video_provider === 'youtube') {
+            return "https://www.youtube.com/watch?v={$this->video_id}";
+        } elseif ($this->video_provider === 'vimeo') {
+            return "https://vimeo.com/{$this->video_id}";
+        }
+
+        return null;
     }
 }

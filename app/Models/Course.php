@@ -16,6 +16,7 @@ class Course extends Model
         'category_id',
         'title',
         'description',
+        'type',
         'price',
         'thumbnail_url',
         'is_published',
@@ -23,6 +24,7 @@ class Course extends Model
     ];
 
     protected $casts = [
+        'type' => 'string',
         'price' => 'integer',
         'is_published' => 'boolean',
     ];
