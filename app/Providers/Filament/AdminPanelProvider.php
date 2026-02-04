@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\EditProfile;
+use App\Filament\Pages\ViewProfile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -16,7 +18,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession; 
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -25,21 +27,21 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('/admin') 
-            ->brandName('Rouf AI')
-            ->brandLogo(asset('images/logo.svg'))
-            ->darkModeBrandLogo(asset('images/logo.png'))
+            ->path('/admin')
+            ->brandName('Rouf AI LMS')
+            ->brandLogo(asset('images/logo.webp'))
+            ->darkModeBrandLogo(asset('images/logo-white.webp'))
             ->brandLogoHeight('3.25rem')
-            ->favicon(asset('images/favicon.ico')) 
+            ->favicon(asset('images/favicon.ico'))
             ->unsavedChangesAlerts()
             ->login()
             ->font('Lato')
-            ->profile()
             ->sidebarCollapsibleOnDesktop()
             ->collapsedSidebarWidth('4rem')
             ->sidebarWidth('17rem')
             ->authGuard('web')
             ->darkMode(true)
+            ->maxContentWidth('full') // Full width container
             ->colors([
                 'primary' => '#e850ff',
                 'danger' => Color::Rose,
@@ -52,6 +54,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                ViewProfile::class, // Custom profile pages
+                EditProfile::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
