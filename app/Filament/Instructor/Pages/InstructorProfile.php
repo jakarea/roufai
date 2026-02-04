@@ -16,7 +16,7 @@ class InstructorProfile extends Page implements HasForms
 
     protected static string $view = 'filament.instructor.pages.profile';
 
-    protected static bool $isNavigationDisabled = true;
+    protected static bool $isGloballySearchable = false;
 
     protected static ?int $navigationSort = 99;
 

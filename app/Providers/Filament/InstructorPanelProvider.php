@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Instructor\Pages\InstructorProfile;
+use App\Filament\Instructor\Widgets;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -12,7 +13,6 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Navigation\MenuItem;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -58,8 +58,13 @@ class InstructorPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Instructor/Widgets'), for: 'App\\Filament\\Instructor\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                Widgets\InstructorStatsWidget::class,
+                Widgets\CoursesChartWidget::class,
+                Widgets\RevenueChartWidget::class,
+                Widgets\EnrollmentTrendsWidget::class,
+                Widgets\RecentEnrollmentsWidget::class,
+                Widgets\PendingRequestsWidget::class,
+                Widgets\RecentReviewsWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
