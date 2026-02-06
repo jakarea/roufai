@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/react';
 import StudentLayout from '@/Layouts/StudentLayout';
 
 export default function Profile({ auth }) {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: auth.user.name || '',
         email: auth.user.email || '',
         phone: auth.user.phone || '',
@@ -14,22 +14,21 @@ export default function Profile({ auth }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/student/profile', {
-            method: 'put',
-        });
+        put('/student/profile');
     };
 
     return (
         <StudentLayout auth={auth}>
-            <div className="max-w-4xl mx-auto">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Profile</h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your personal information and settings</p>
+            <div className="space-y-6">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl">
+                    <h1 className="text-3xl font-bold mb-2">My Profile</h1>
+                    <p className="text-purple-100">Manage your personal information and settings</p>
                 </div>
 
                 {/* Profile Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-purple-100 dark:border-purple-800 overflow-hidden mb-6">
-                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 h-32"></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-purple-100 dark:border-purple-800 overflow-hidden">
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-24"></div>
                     <div className="px-8 pb-8">
                         <div className="flex items-end -mt-16 mb-6">
                             <div className="w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-5xl font-bold border-4 border-white dark:border-gray-800 shadow-xl">

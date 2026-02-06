@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\CertificateController;
 use Illuminate\Support\Facades\Route;
 
 // Common login page for all users
@@ -13,10 +14,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'role:student'])->prefix('student')->group(function () {
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
     Route::get('/courses/{id}', [StudentController::class, 'course'])->name('student.course');
+    Route::get('/completed-courses', [StudentController::class, 'completedCourses'])->name('student.completed-courses');
     Route::post('/lessons/complete', [StudentController::class, 'markLessonComplete'])->name('student.lessons.complete');
     Route::post('/courses/{id}/review', [StudentController::class, 'submitReview'])->name('student.courses.review');
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
     Route::put('/profile', [StudentController::class, 'updateProfile'])->name('student.profile.update');
+    Route::get('/certificate/{courseId}', [CertificateController::class, 'download'])->name('student.certificate.download');
 });
 
 // Redirect root to login

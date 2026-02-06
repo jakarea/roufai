@@ -76,12 +76,15 @@ class CourseResource extends Resource
                             ->prefix('৳')
                             ->visible(fn (callable $get) => $get('type') === 'PAID')
                             ->required(fn (callable $get) => $get('type') === 'PAID')
-                            ->columnSpan(1),
-                        Forms\Components\TextInput::make('thumbnail_url')
-                            ->label('Thumbnail URL')
-                            ->url()
-                            ->placeholder('https://example.com/thumbnail.jpg')
-                            ->columnSpan(1),
+                            ->columnSpan(2),
+                        Forms\Components\FileUpload::make('thumbnail_path')
+                            ->label('Course Thumbnail')
+                            ->image()
+                            ->imageEditor()
+                            ->directory('course-thumbnails')
+                            ->visibility('public')
+                            ->maxSize(5120) // 5MB
+                            ->columnSpanFull(),
                         Forms\Components\Toggle::make('is_published')
                             ->label('Publish Course')
                             ->helperText('Enable to make this course visible to students')
@@ -96,7 +99,7 @@ class CourseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail_url')
+                Tables\Columns\ImageColumn::make('thumbnail_path')
                     ->label('Thumbnail')
                     ->square()
                     ->size(60)

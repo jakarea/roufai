@@ -6,22 +6,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class Lesson extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'course_id',
         'module_id',
         'title',
+        'description',
         'video_provider',
         'video_id',
         'is_free_preview',
         'order_index',
+        'duration_in_minutes',
+        'attachment_path',
     ];
 
     protected $appends = [
         'video_url',
+        'attachment_url',
     ];
 
     protected $casts = [
@@ -38,11 +44,11 @@ class Lesson extends Model
     }
 
     /**
-     * Get the course through module
+     * Get the course that owns the lesson
      */
-    public function course()
+    public function course(): BelongsTo
     {
-        return $this->module->course();
+        return $this->belongsTo(Course::class);
     }
 
     /**
@@ -74,6 +80,17 @@ class Lesson extends Model
             return "https://vimeo.com/{$this->video_id}";
         }
 
+        return null;
+    }
+
+    /**
+     * Get the attachment URL
+     */
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        if ($this->attachment_path) {
+            return \Storage::url($this->attachment_path);
+        }
         return null;
     }
 }

@@ -6,24 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Review extends Model
+class Certificate extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
         'course_id',
-        'rating',
-        'comment',
-        'status',
+        'certificate_number',
+        'issued_at',
     ];
 
     protected $casts = [
-        'rating' => 'integer',
+        'issued_at' => 'datetime',
     ];
 
     /**
-     * Get the student that owns the review
+     * Get the user that owns the certificate
      */
     public function user(): BelongsTo
     {
@@ -31,10 +30,18 @@ class Review extends Model
     }
 
     /**
-     * Get the course that owns the review
+     * Get the course that owns the certificate
      */
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    /**
+     * Generate a unique certificate number
+     */
+    public static function generateCertificateNumber(): string
+    {
+        return 'CERT-' . strtoupper(uniqid());
     }
 }

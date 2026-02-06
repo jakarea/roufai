@@ -19,14 +19,80 @@ class StudentController extends Controller
 
         // Get all enrolled courses with their relationships
         $enrollments = Enrollment::where('user_id', $student->id)
-            ->with(['course.category', 'course.instructor'])
+            ->with(['course.category', 'course.instructor', 'course.modules.lessons'])
             ->whereHas('course', function ($query) {
                 $query->where('is_published', true);
             })
             ->get();
 
+        // Get completed lessons for this student
+        $completedLessons = LessonCompletion::where('user_id', $student->id)
+            ->pluck('lesson_id')
+            ->toArray();
+
+        // Get certificates count
+        $certificatesCount = \App\Models\Certificate::where('user_id', $student->id)->count();
+
+        // Get active or upcoming live class
+        $enrolledCourseIds = $enrollments->pluck('course.id')->unique()->filter()->values();
+
+        $liveClass = null;
+        $now = now();
+        $currentDate = $now->format('Y-m-d');
+        $currentTime = $now->format('H:i:s');
+
+        // First try to get an ongoing live class
+        $liveClass = \App\Models\LiveClass::with(['course', 'instructor'])
+            ->where('status', 'ongoing')
+            ->where('start_date', '<=', $currentDate)
+            ->whereRaw('DATE_ADD(CONCAT(start_date, " ", start_time), INTERVAL duration_minutes MINUTE) >= ?', [$now->format('Y-m-d H:i:s')])
+            ->where(function ($query) use ($enrolledCourseIds) {
+                // Either course is NULL (public to all students)
+                // OR course_id is in the student's enrolled courses
+                $query->whereNull('course_id')
+                    ->orWhereIn('course_id', $enrolledCourseIds);
+            })
+            ->first();
+
+        // If no ongoing class, get the next scheduled class
+        if (!$liveClass) {
+            $liveClass = \App\Models\LiveClass::with(['course', 'instructor'])
+                ->where('status', 'scheduled')
+                ->where(function ($query) use ($currentDate, $currentTime) {
+                    $query->where('start_date', '>', $currentDate)
+                        ->orWhere(function ($q) use ($currentDate, $currentTime) {
+                            $q->where('start_date', '=', $currentDate)
+                                ->where('start_time', '>', $currentTime);
+                        });
+                })
+                ->where(function ($query) use ($enrolledCourseIds) {
+                    // Either course is NULL (public to all students)
+                    // OR course_id is in the student's enrolled courses
+                    $query->whereNull('course_id')
+                        ->orWhereIn('course_id', $enrolledCourseIds);
+                })
+                ->orderBy('start_date')
+                ->orderBy('start_time')
+                ->first();
+        }
+
         return inertia('Student/Dashboard', [
-            'enrollments' => $enrollments->map(function ($enrollment) {
+            'enrollments' => $enrollments->map(function ($enrollment) use ($completedLessons) {
+                // Calculate total lessons and completed lessons
+                $totalLessons = 0;
+                $completedCount = 0;
+
+                foreach ($enrollment->course->modules as $module) {
+                    $totalLessons += $module->lessons->count();
+                    foreach ($module->lessons as $lesson) {
+                        if (in_array($lesson->id, $completedLessons)) {
+                            $completedCount++;
+                        }
+                    }
+                }
+
+                $isCompleted = $totalLessons > 0 && $completedCount === $totalLessons;
+
                 return [
                     'id' => $enrollment->id,
                     'enrolled_at' => $enrollment->enrolled_at,
@@ -35,8 +101,11 @@ class StudentController extends Controller
                         'title' => $enrollment->course->title,
                         'description' => $enrollment->course->description,
                         'thumbnail_url' => $enrollment->course->thumbnail_url,
+                        'thumbnail_path' => $enrollment->course->thumbnail_path,
                         'type' => $enrollment->course->type,
                         'price' => $enrollment->course->price,
+                        'is_completed' => $isCompleted,
+                        'progress' => $totalLessons > 0 ? round(($completedCount / $totalLessons) * 100) : 0,
                         'category' => [
                             'id' => $enrollment->course->category->id ?? null,
                             'name' => $enrollment->course->category->name ?? 'N/A',
@@ -48,6 +117,23 @@ class StudentController extends Controller
                     ],
                 ];
             }),
+            'totalLearningTime' => $student->total_learning_time,
+            'certificatesCount' => $certificatesCount,
+            'liveClass' => $liveClass ? [
+                'id' => $liveClass->id,
+                'topic' => $liveClass->topic,
+                'description' => $liveClass->description,
+                'meeting_link' => $liveClass->meeting_link,
+                'start_date' => $liveClass->start_date?->format('d-m-Y'),
+                'start_time' => $liveClass->start_time?->format('H:i'),
+                'start_datetime' => $liveClass->start_datetime,
+                'duration_minutes' => $liveClass->duration_minutes,
+                'status' => $liveClass->status,
+                'thumbnail_url' => $liveClass->thumbnail_url,
+                'instructor' => [
+                    'name' => $liveClass->instructor->name,
+                ],
+            ] : null,
         ]);
     }
 
@@ -64,16 +150,24 @@ class StudentController extends Controller
             ->firstOrFail();
 
         $course = \App\Models\Course::with([
-            'category',
-            'instructor',
-            'modules.lessons' => function ($query) {
-                $query->orderBy('order_index');
-            },
-            'reviews.user'
-        ])
-        ->withAvg('reviews', 'rating')
-        ->withCount('enrollments')
-        ->findOrFail($id);
+                'category',
+                'instructor',
+                'modules.lessons' => function ($query) {
+                    $query->orderBy('order_index');
+                },
+                'reviews.user'
+            ])
+            ->withCount('enrollments')
+            ->findOrFail($id);
+
+        // Calculate average rating only from approved reviews
+        $avgRating = \App\Models\Review::where('course_id', $course->id)
+            ->where('status', 'approved')
+            ->avg('rating');
+
+        $approvedReviewsCount = \App\Models\Review::where('course_id', $course->id)
+            ->where('status', 'approved')
+            ->count();
 
         // Get completed lessons for this student
         $completedLessons = LessonCompletion::where('user_id', $student->id)
@@ -115,24 +209,35 @@ class StudentController extends Controller
                                 'title' => $lesson->title,
                                 'description' => $lesson->description,
                                 'video_url' => $lesson->video_url,
-                                'duration' => $lesson->duration,
+                                'duration' => $lesson->duration_in_minutes,
                                 'order' => $lesson->order,
+                                'video_provider' => $lesson->video_provider,
+                                'video_id' => $lesson->video_id,
+                                'attachment_url' => $lesson->attachment_url,
                             ];
                         }),
                     ];
                 })->sortBy('order')->values(),
-                'reviews' => $course->reviews->map(function ($review) {
-                    return [
-                        'id' => $review->id,
-                        'rating' => $review->rating,
-                        'comment' => $review->comment,
-                        'created_at' => $review->created_at,
-                        'user' => [
-                            'name' => $review->user->name,
-                        ],
-                    ];
-                }),
-                'reviews_avg_rating' => $course->reviews_avg_rating,
+                'reviews' => $course->reviews
+                    ->filter(function ($review) use ($student) {
+                        // Show approved reviews, or pending reviews only from current student
+                        return $review->status === 'approved' ||
+                            ($review->status === 'pending' && $review->user_id === $student->id);
+                    })
+                    ->map(function ($review) {
+                        return [
+                            'id' => $review->id,
+                            'rating' => $review->rating,
+                            'comment' => $review->comment,
+                            'created_at' => $review->created_at,
+                            'status' => $review->status,
+                            'user' => [
+                                'name' => $review->user->name,
+                            ],
+                        ];
+                    })
+                    ->values(),
+                'reviews_avg_rating' => $avgRating,
                 'enrollments_count' => $course->enrollments_count,
             ],
             'completedLessons' => $completedLessons,
@@ -140,7 +245,74 @@ class StudentController extends Controller
                 'id' => $userReview->id,
                 'rating' => $userReview->rating,
                 'comment' => $userReview->comment,
+                'status' => $userReview->status,
             ] : null,
+        ]);
+    }
+
+    /**
+     * Show completed courses with certificates.
+     */
+    public function completedCourses()
+    {
+        $student = Auth::user();
+
+        // Get all enrolled courses with their relationships
+        $enrollments = Enrollment::where('user_id', $student->id)
+            ->with(['course.category', 'course.instructor', 'course.modules.lessons'])
+            ->whereHas('course', function ($query) {
+                $query->where('is_published', true);
+            })
+            ->get();
+
+        // Get completed lessons for this student
+        $completedLessons = LessonCompletion::where('user_id', $student->id)
+            ->pluck('lesson_id')
+            ->toArray();
+
+        // Filter only completed courses
+        $completedCourses = [];
+        foreach ($enrollments as $enrollment) {
+            $totalLessons = 0;
+            $completedCount = 0;
+
+            foreach ($enrollment->course->modules as $module) {
+                $totalLessons += $module->lessons->count();
+                foreach ($module->lessons as $lesson) {
+                    if (in_array($lesson->id, $completedLessons)) {
+                        $completedCount++;
+                    }
+                }
+            }
+
+            if ($totalLessons > 0 && $completedCount === $totalLessons) {
+                $completedCourses[] = [
+                    'id' => $enrollment->course->id,
+                    'title' => $enrollment->course->title,
+                    'description' => $enrollment->course->description,
+                    'thumbnail_url' => $enrollment->course->thumbnail_url,
+                    'thumbnail_path' => $enrollment->course->thumbnail_path,
+                    'type' => $enrollment->course->type,
+                    'price' => $enrollment->course->price,
+                    'category' => [
+                        'id' => $enrollment->course->category->id ?? null,
+                        'name' => $enrollment->course->category->name ?? 'N/A',
+                    ],
+                    'instructor' => [
+                        'id' => $enrollment->course->instructor->id ?? null,
+                        'name' => $enrollment->course->instructor->name ?? 'N/A',
+                    ],
+                    'completed_at' => LessonCompletion::where('user_id', $student->id)
+                        ->where('course_id', $enrollment->course->id)
+                        ->latest('completed_at')
+                        ->first()
+                        ?->completed_at,
+                ];
+            }
+        }
+
+        return inertia('Student/CompletedCourses', [
+            'completedCourses' => $completedCourses,
         ]);
     }
 
@@ -162,6 +334,9 @@ class StudentController extends Controller
                 ->where('course_id', $request->course_id)
                 ->firstOrFail();
 
+            // Get the lesson to add its duration to learning time
+            $lesson = \App\Models\Lesson::findOrFail($request->lesson_id);
+
             // Create or update lesson completion
             $completion = LessonCompletion::updateOrCreate(
                 [
@@ -174,11 +349,19 @@ class StudentController extends Controller
                 ]
             );
 
+            // Only add learning time if this is a new completion (not already completed before)
+            if ($completion->wasRecentlyCreated) {
+                $student->total_learning_time += $lesson->duration_in_minutes;
+                $student->save();
+            }
+
             \Log::info('Lesson marked as complete', [
                 'completion_id' => $completion->id,
                 'user_id' => $student->id,
                 'lesson_id' => $request->lesson_id,
                 'course_id' => $request->course_id,
+                'duration_added' => $lesson->duration_in_minutes,
+                'total_learning_time' => $student->total_learning_time,
             ]);
 
             return redirect()->back()->with('success', 'Lesson marked as complete!');

@@ -51,6 +51,7 @@ class LessonResource extends Resource
                             ->preload()
                             ->required()
                             ->live()
+                            ->disabled(fn ($record) => $record !== null) // Disable when editing
                             ->columnSpan(2),
                         Forms\Components\Select::make('module_id')
                             ->label('Module')
@@ -69,6 +70,16 @@ class LessonResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                // Auto-set course_id when module is selected
+                                if ($state) {
+                                    $module = \App\Models\Module::find($state);
+                                    if ($module) {
+                                        $set('course_id', $module->course_id);
+                                    }
+                                }
+                            })
                             ->columnSpan(2),
                         Forms\Components\TextInput::make('title')
                             ->required()
@@ -79,6 +90,14 @@ class LessonResource extends Resource
                             ->helperText('The order in which this lesson appears in the module')
                             ->required()
                             ->numeric()
+                            ->default(0)
+                            ->columnSpan(1),
+                        Forms\Components\TextInput::make('duration_in_minutes')
+                            ->label('Duration (minutes)')
+                            ->helperText('Estimated duration of this lesson')
+                            ->required()
+                            ->numeric()
+                            ->minValue(1)
                             ->default(0)
                             ->columnSpan(1),
                         Forms\Components\Textarea::make('description')
@@ -112,11 +131,6 @@ class LessonResource extends Resource
                                 ? 'Paste the YouTube video ID only (from https://youtube.com/watch?v=VIDEO_ID)'
                                 : 'Paste the Vimeo video ID only (from https://vimeo.com/VIDEO_ID)')
                             ->columnSpan(2),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description')
-                            ->rows(3)
-                            ->placeholder('Brief description of this lesson')
-                            ->columnSpanFull(),
                         Forms\Components\Toggle::make('is_free_preview')
                             ->label('Free Preview')
                             ->helperText('Allow students to watch this lesson without enrolling')
@@ -124,6 +138,17 @@ class LessonResource extends Resource
                             ->columnSpan(1),
                     ])
                     ->columns(2),
+
+                Forms\Components\Section::make('Lesson Attachment')
+                    ->description('Attach a PDF file for this lesson (optional)')
+                    ->schema([
+                        Forms\Components\FileUpload::make('attachment_path')
+                            ->label('PDF Attachment')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->directory('lesson-attachments')
+                            ->maxSize(10240),
+                    ])
+                    ->columns(1),
             ]);
     }
 
@@ -158,6 +183,11 @@ class LessonResource extends Resource
                     ->falseIcon('heroicon-o-eye-slash')
                     ->trueColor('success')
                     ->falseColor('gray')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('duration_in_minutes')
+                    ->label('Duration')
+                    ->formatStateUsing(fn ($state) => $state . ' min')
+                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('order_index')
                     ->label('Order')

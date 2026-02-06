@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Filament\Resources\CertificateSettingResource\Pages;
+
+use App\Filament\Resources\CertificateSettingResource;
+use Filament\Actions;
+use Filament\Resources\Pages\EditRecord;
+
+class EditCertificateSetting extends EditRecord
+{
+    protected static string $resource = CertificateSettingResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+        ];
+    }
+}
