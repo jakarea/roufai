@@ -33,7 +33,7 @@ class StudentController extends Controller
         // Get certificates count
         $certificatesCount = \App\Models\Certificate::where('user_id', $student->id)->count();
 
-        // Get active or upcoming live class
+        // Get active or upcoming live class (real-time status calculation)
         $enrolledCourseIds = $enrollments->pluck('course.id')->unique()->filter()->values();
 
         $liveClass = null;
@@ -41,40 +41,65 @@ class StudentController extends Controller
         $currentDate = $now->format('Y-m-d');
         $currentTime = $now->format('H:i:s');
 
-        // First try to get an ongoing live class
-        $liveClass = \App\Models\LiveClass::with(['course', 'instructor'])
-            ->where('status', 'ongoing')
-            ->where('start_date', '<=', $currentDate)
-            ->whereRaw('DATE_ADD(CONCAT(start_date, " ", start_time), INTERVAL duration_minutes MINUTE) >= ?', [$now->format('Y-m-d H:i:s')])
+        // Get all relevant live classes (public or enrolled courses)
+        // Exclude expired classes
+        $allLiveClasses = \App\Models\LiveClass::with(['course', 'instructor'])
             ->where(function ($query) use ($enrolledCourseIds) {
                 // Either course is NULL (public to all students)
                 // OR course_id is in the student's enrolled courses
                 $query->whereNull('course_id')
                     ->orWhereIn('course_id', $enrolledCourseIds);
             })
-            ->first();
+            ->where('start_date', '>=', $now->subDays(7)->format('Y-m-d')) // Get classes from last 7 days onwards
+            ->orderBy('start_date')
+            ->orderBy('start_time')
+            ->get();
 
-        // If no ongoing class, get the next scheduled class
-        if (!$liveClass) {
-            $liveClass = \App\Models\LiveClass::with(['course', 'instructor'])
-                ->where('status', 'scheduled')
-                ->where(function ($query) use ($currentDate, $currentTime) {
-                    $query->where('start_date', '>', $currentDate)
-                        ->orWhere(function ($q) use ($currentDate, $currentTime) {
-                            $q->where('start_date', '=', $currentDate)
-                                ->where('start_time', '>', $currentTime);
-                        });
-                })
-                ->where(function ($query) use ($enrolledCourseIds) {
-                    // Either course is NULL (public to all students)
-                    // OR course_id is in the student's enrolled courses
-                    $query->whereNull('course_id')
-                        ->orWhereIn('course_id', $enrolledCourseIds);
-                })
-                ->orderBy('start_date')
-                ->orderBy('start_time')
-                ->first();
+        // Find currently live class (within duration)
+        $currentlyLive = null;
+        $upcomingClass = null;
+
+        foreach ($allLiveClasses as $class) {
+            // Combine date and time properly
+            $startDateStr = $class->start_date->format('Y-m-d');
+            $startTimeStr = $class->start_time; // Should be "HH:MM:SS"
+
+            $startDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $startDateStr . ' ' . $startTimeStr);
+            $endDateTime = $startDateTime->copy()->addMinutes($class->duration_minutes);
+
+            \Log::info('Checking class', [
+                'class_id' => $class->id,
+                'topic' => $class->topic,
+                'start_date' => $startDateStr,
+                'start_time' => $startTimeStr,
+                'duration' => $class->duration_minutes,
+                'startDateTime' => $startDateTime->toDateTimeString(),
+                'endDateTime' => $endDateTime->toDateTimeString(),
+                'now' => $now->toDateTimeString(),
+                'is_between' => $now->between($startDateTime, $endDateTime),
+            ]);
+
+            // Check if class is currently live (within start and end time)
+            if ($now->between($startDateTime, $endDateTime)) {
+                $currentlyLive = $class;
+                \Log::info('Found currently live class', ['class_id' => $class->id, 'topic' => $class->topic]);
+                break;
+            }
+
+            // Get first upcoming class if not already found
+            if (!$upcomingClass && $startDateTime->isFuture()) {
+                $upcomingClass = $class;
+            }
         }
+
+        // Show currently live class if available, otherwise show upcoming
+        $liveClass = $currentlyLive ?? $upcomingClass;
+
+        \Log::info('Final selection', [
+            'has_currently_live' => $currentlyLive !== null,
+            'has_upcoming' => $upcomingClass !== null,
+            'selected_id' => $liveClass ? $liveClass->id : null,
+        ]);
 
         return inertia('Student/Dashboard', [
             'enrollments' => $enrollments->map(function ($enrollment) use ($completedLessons) {
@@ -125,10 +150,9 @@ class StudentController extends Controller
                 'description' => $liveClass->description,
                 'meeting_link' => $liveClass->meeting_link,
                 'start_date' => $liveClass->start_date?->format('d-m-Y'),
-                'start_time' => $liveClass->start_time?->format('H:i'),
-                'start_datetime' => $liveClass->start_datetime,
+                'start_time' => substr($liveClass->start_time, 0, 5), // Convert "HH:MM:SS" to "HH:MM"
                 'duration_minutes' => $liveClass->duration_minutes,
-                'status' => $liveClass->status,
+                'status' => $currentlyLive ? 'live' : 'scheduled', // Real-time status
                 'thumbnail_url' => $liveClass->thumbnail_url,
                 'instructor' => [
                     'name' => $liveClass->instructor->name,
@@ -411,6 +435,74 @@ class StudentController extends Controller
         ]);
 
         return back()->with('success', 'Review submitted successfully!');
+    }
+
+    /**
+     * Show all live classes for the student.
+     */
+    public function liveClasses()
+    {
+        $student = Auth::user();
+
+        // Get all enrolled courses
+        $enrollments = Enrollment::where('user_id', $student->id)
+            ->with(['course'])
+            ->whereHas('course', function ($query) {
+                $query->where('is_published', true);
+            })
+            ->get();
+
+        $enrolledCourseIds = $enrollments->pluck('course.id')->unique()->filter()->values();
+
+        // Get all relevant live classes (public or enrolled courses)
+        $allLiveClasses = \App\Models\LiveClass::with(['course', 'instructor'])
+            ->where(function ($query) use ($enrolledCourseIds) {
+                // Either course is NULL (public to all students)
+                // OR course_id is in the student's enrolled courses
+                $query->whereNull('course_id')
+                    ->orWhereIn('course_id', $enrolledCourseIds);
+            })
+            ->orderBy('start_date')
+            ->orderBy('start_time')
+            ->get();
+
+        // Calculate real-time status for each class
+        $now = now();
+        $liveClassesData = [];
+
+        foreach ($allLiveClasses as $class) {
+            // Combine date and time properly - start_time is now a string
+            $startDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $class->start_date->format('Y-m-d') . ' ' . $class->start_time);
+            $endDateTime = $startDateTime->copy()->addMinutes($class->duration_minutes);
+            $isCompleted = $endDateTime->isPast();
+            $isCurrentlyLive = $now->between($startDateTime, $endDateTime);
+            $isUpcoming = $startDateTime->isFuture();
+
+            $status = $isCompleted ? 'completed' : ($isCurrentlyLive ? 'live' : 'scheduled');
+
+            $liveClassesData[] = [
+                'id' => $class->id,
+                'topic' => $class->topic,
+                'description' => $class->description,
+                'meeting_link' => $class->meeting_link,
+                'start_date' => $class->start_date?->format('d-m-Y'),
+                'start_time' => substr($class->start_time, 0, 5), // Convert "HH:MM:SS" to "HH:MM"
+                'duration_minutes' => $class->duration_minutes,
+                'status' => $status,
+                'thumbnail_url' => $class->thumbnail_url,
+                'instructor' => [
+                    'name' => $class->instructor->name,
+                ],
+                'course' => $class->course ? [
+                    'id' => $class->course->id,
+                    'title' => $class->course->title,
+                ] : null,
+            ];
+        }
+
+        return inertia('Student/LiveClasses', [
+            'liveClasses' => $liveClassesData,
+        ]);
     }
 
     /**

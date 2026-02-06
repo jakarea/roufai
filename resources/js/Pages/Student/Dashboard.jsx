@@ -1,8 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import StudentLayout from '@/Layouts/StudentLayout';
 
 export default function Dashboard({ auth, enrollments, totalLearningTime, certificatesCount, liveClass }) {
+    // Countdown state
+    const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+    // Update countdown every second
+    useEffect(() => {
+        if (!liveClass || liveClass.status === 'live') {
+            return;
+        }
+
+        const calculateCountdown = () => {
+            const [day, month, year] = liveClass.start_date.split('-');
+            const [startHours, startMinutes] = liveClass.start_time.split(':');
+
+            const classDate = new Date(year, month - 1, day, startHours, startMinutes);
+            const now = new Date();
+            const diff = classDate - now;
+
+            if (diff <= 0) {
+                setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            setCountdown({ days, hours, minutes, seconds });
+        };
+
+        calculateCountdown();
+        const interval = setInterval(calculateCountdown, 1000);
+
+        return () => clearInterval(interval);
+    }, [liveClass]);
     // Convert minutes to hours and minutes
     const formatLearningTime = (minutes) => {
         if (!minutes || minutes === 0) return '0h 0m';
@@ -65,12 +100,12 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
                 {/* Live Class Banner */}
                 {liveClass && liveClass.status !== 'canceled' && (
                     <div className={`rounded-2xl shadow-xl border-2 overflow-hidden ${
-                        liveClass.status === 'ongoing'
+                        liveClass.status === 'live'
                             ? 'bg-gradient-to-r from-red-500 to-pink-500 border-red-300'
                             : 'bg-gradient-to-r from-blue-500 to-purple-500 border-blue-300'
                     }`}>
-                        {liveClass.status === 'ongoing' ? (
-                            // ONGOING CLASS - Video Player Style Box
+                        {liveClass.status === 'live' ? (
+                            // LIVE CLASS - Video Player Style Box
                             <div className="w-full max-w-2xl mx-auto">
                                 <div className="relative bg-black aspect-video flex items-center justify-center">
                                     {liveClass.thumbnail_url ? (
@@ -160,14 +195,22 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
                                             <p className="text-white/70 text-xs mt-1">Duration: {liveClass.duration_minutes} minutes</p>
                                         </div>
                                     </div>
-                                    <a
-                                        href={liveClass.meeting_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold shadow-lg transition-all duration-300 hover:scale-105 flex-shrink-0 hover:bg-blue-700"
-                                    >
-                                        Set Reminder
-                                    </a>
+                                    <div className="flex-shrink-0 text-right">
+                                        <div className="text-white/70 text-xs mb-1">Starting in:</div>
+                                        <div className="flex items-center space-x-1 text-white font-mono font-bold">
+                                            {countdown.days > 0 && (
+                                                <>
+                                                    <span className="bg-white/20 px-2 py-1 rounded">{countdown.days}d</span>
+                                                    <span>:</span>
+                                                </>
+                                            )}
+                                            <span className="bg-white/20 px-2 py-1 rounded">{String(countdown.hours).padStart(2, '0')}h</span>
+                                            <span>:</span>
+                                            <span className="bg-white/20 px-2 py-1 rounded">{String(countdown.minutes).padStart(2, '0')}m</span>
+                                            <span>:</span>
+                                            <span className="bg-white/20 px-2 py-1 rounded">{String(countdown.seconds).padStart(2, '0')}s</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}

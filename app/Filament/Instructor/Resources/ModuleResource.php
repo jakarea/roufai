@@ -16,6 +16,8 @@ class ModuleResource extends Resource
 {
     protected static ?string $model = Module::class;
 
+    protected static bool $isDiscovered = false; // Hide from navigation
+
     protected static ?string $navigationIcon = 'heroicon-o-folder';
 
     protected static ?string $navigationLabel = 'Modules';

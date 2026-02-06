@@ -16,6 +16,8 @@ class LessonResource extends Resource
 {
     protected static ?string $model = Lesson::class;
 
+    protected static bool $isDiscovered = false; // Hide from navigation
+
     protected static ?string $navigationIcon = 'heroicon-o-play-circle';
 
     protected static ?string $navigationLabel = 'Lessons';

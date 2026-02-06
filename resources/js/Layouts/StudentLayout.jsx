@@ -67,6 +67,12 @@ export default function StudentLayout({ children, auth }) {
                                     Dashboard
                                 </Link>
                                 <Link
+                                    href="/student/live-classes"
+                                    className="text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 font-medium transition-colors"
+                                >
+                                    Live Classes
+                                </Link>
+                                <Link
                                     href="/student/completed-courses"
                                     className="text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 font-medium transition-colors"
                                 >
@@ -136,6 +142,17 @@ export default function StudentLayout({ children, auth }) {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                                     </svg>
                                                     Dashboard
+                                                </Link>
+
+                                                <Link
+                                                    href="/student/live-classes"
+                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-purple-900/50 transition-colors"
+                                                    onClick={() => setDropdownOpen(false)}
+                                                >
+                                                    <svg className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                    Live Classes
                                                 </Link>
 
                                                 <Link

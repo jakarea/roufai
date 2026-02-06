@@ -15,6 +15,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->group(function (
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
     Route::get('/courses/{id}', [StudentController::class, 'course'])->name('student.course');
     Route::get('/completed-courses', [StudentController::class, 'completedCourses'])->name('student.completed-courses');
+    Route::get('/live-classes', [StudentController::class, 'liveClasses'])->name('student.live-classes');
     Route::post('/lessons/complete', [StudentController::class, 'markLessonComplete'])->name('student.lessons.complete');
     Route::post('/courses/{id}/review', [StudentController::class, 'submitReview'])->name('student.courses.review');
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');

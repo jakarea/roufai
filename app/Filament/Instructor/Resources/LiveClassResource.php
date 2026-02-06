@@ -74,9 +74,7 @@ class LiveClassResource extends Resource
                             ->label('Status')
                             ->options([
                                 'scheduled' => 'Scheduled',
-                                'ongoing' => 'Ongoing',
                                 'completed' => 'Completed',
-                                'canceled' => 'Canceled',
                             ])
                             ->default('scheduled')
                             ->required()
@@ -144,20 +142,6 @@ class LiveClassResource extends Resource
                     ->sortable()
                     ->weight('bold')
                     ->description(fn ($record): string => $record->course_id ? $record->course->title : 'Public - Available to All Students'),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->label('Status')
-                    ->colors([
-                        'warning' => 'scheduled',
-                        'success' => 'ongoing',
-                        'gray' => 'completed',
-                        'danger' => 'canceled',
-                    ])
-                    ->icons([
-                        'heroicon-o-clock' => 'scheduled',
-                        'heroicon-o-video-camera' => 'ongoing',
-                        'heroicon-o-check-circle' => 'completed',
-                        'heroicon-o-x-circle' => 'canceled',
-                    ]),
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('Date')
                     ->date('d-m-Y')
@@ -184,55 +168,10 @@ class LiveClassResource extends Resource
                         }
                         return $query;
                     }),
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'scheduled' => 'Scheduled',
-                        'ongoing' => 'Ongoing',
-                        'completed' => 'Completed',
-                        'canceled' => 'Canceled',
-                    ]),
-                Tables\Filters\Filter::make('upcoming')
-                    ->label('Upcoming Classes')
-                    ->query(fn (Builder $query): Builder => $query->where('start_datetime', '>', now()))
-                    ->toggle(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('start')
-                    ->label('Start')
-                    ->icon('heroicon-o-play')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Start Live Class')
-                    ->modalDescription('This will mark the live class as ongoing. Students will see it as active.')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'ongoing']);
-                    })
-                    ->visible(fn ($record) => $record->status === 'scheduled'),
-                Tables\Actions\Action::make('complete')
-                    ->label('Complete')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('primary')
-                    ->requiresConfirmation()
-                    ->modalHeading('Complete Live Class')
-                    ->modalDescription('Mark this live class as completed.')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'completed']);
-                    })
-                    ->visible(fn ($record) => $record->status === 'ongoing'),
-                Tables\Actions\Action::make('cancel')
-                    ->label('Cancel')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->modalHeading('Cancel Live Class')
-                    ->modalDescription('Are you sure you want to cancel this live class? Students will not see it.')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'canceled']);
-                    })
-                    ->visible(fn ($record) => in_array($record->status, ['scheduled', 'ongoing'])),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

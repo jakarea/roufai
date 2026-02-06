@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class LiveClass extends Model
 {
@@ -19,30 +20,31 @@ class LiveClass extends Model
         'meeting_link',
         'start_date',
         'start_time',
-        'start_datetime',
         'duration_minutes',
         'thumbnail_path',
         'status',
     ];
 
     protected $casts = [
-        'start_datetime' => 'datetime',
         'start_date' => 'date',
-        'start_time' => 'datetime',
+        'start_time' => 'string', // Keep as string for TIME column
     ];
 
     /**
-     * Boot method to auto-combine date and time
+     * Boot method to add custom validation
      */
     protected static function boot()
     {
         parent::boot();
 
-        static::saving(function ($model) {
-            if (isset($model->start_date) && isset($model->start_time)) {
-                $model->start_datetime = $model->start_date->format('Y-m-d') . ' ' . $model->start_time->format('H:i:s');
+        Validator::extend('date_not_past', function ($attribute, $value, $parameters) {
+            if (!$value) {
+                return true;
             }
-        });
+            $inputDate = \Carbon\Carbon::parse($value);
+            $today = \Carbon\Carbon::today();
+            return $inputDate->gte($today);
+        }, 'The :attribute must be today or a future date.');
     }
 
     /**
@@ -55,11 +57,11 @@ class LiveClass extends Model
             'topic' => 'required|string|max:255',
             'description' => 'nullable|string',
             'meeting_link' => 'required|url',
-            'start_date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date|date_not_past',
             'start_time' => 'required|date_format:H:i',
             'duration_minutes' => 'required|integer|min:1',
             'thumbnail_path' => 'nullable|string',
-            'status' => 'required|in:scheduled,ongoing,completed,canceled',
+            'status' => 'required|in:scheduled,completed',
         ];
     }
 
@@ -69,18 +71,8 @@ class LiveClass extends Model
     public static function validationMessages(): array
     {
         return [
-            'start_date.after_or_equal' => 'The live class must be scheduled for today or a future date.',
+            'start_date.date_not_past' => 'The live class must be scheduled for today or a future date.',
             'start_time.required' => 'Please select a start time.',
-        ];
-    }
-
-    /**
-     * Get the custom error messages for validator.
-     */
-    public static function getValidationMessages(): array
-    {
-        return [
-            'start_datetime.after' => 'The live class must be scheduled at least 10 minutes in advance.',
         ];
     }
 
@@ -125,9 +117,10 @@ class LiveClass extends Model
         }
 
         $now = now();
-        $endTime = $this->start_datetime->addMinutes($this->duration_minutes);
+        $startDateTime = $this->start_date->format('Y-m-d') . ' ' . $this->start_time->format('H:i:s');
+        $endDateTime = (new \Carbon\Carbon($startDateTime))->addMinutes($this->duration_minutes);
 
-        return $now->between($this->start_datetime, $endTime);
+        return $now->between(new \Carbon\Carbon($startDateTime), $endDateTime);
     }
 
     /**
@@ -135,7 +128,12 @@ class LiveClass extends Model
      */
     public function isUpcoming(): bool
     {
-        return $this->status === 'scheduled' && $this->start_datetime->isFuture();
+        if ($this->status !== 'scheduled') {
+            return false;
+        }
+
+        $startDateTime = $this->start_date->format('Y-m-d') . ' ' . $this->start_time->format('H:i:s');
+        return (new \Carbon\Carbon($startDateTime))->isFuture();
     }
 
     /**
@@ -143,8 +141,6 @@ class LiveClass extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('status', 'ongoing')
-            ->where('start_datetime', '<=', now())
-            ->whereRaw('DATE_ADD(start_datetime, INTERVAL duration_minutes MINUTE) >= ?', [now()]);
+        return $query->where('status', 'ongoing');
     }
 }
