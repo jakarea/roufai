@@ -90,6 +90,18 @@ class ReviewResource extends Resource
                     ->label('Course')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'approved',
+                        'danger' => 'rejected',
+                    ])
+                    ->icons([
+                        'heroicon-o-clock' => 'pending',
+                        'heroicon-o-check-circle' => 'approved',
+                        'heroicon-o-x-circle' => 'rejected',
+                    ]),
                 Tables\Columns\TextColumn::make('rating')
                     ->label('Rating')
                     ->formatStateUsing(fn ($state): string => '⭐ ' . $state . '/5')
@@ -107,6 +119,14 @@ class ReviewResource extends Resource
                     ->description(fn ($record): string => $record->created_at?->diffForHumans() ?? 'N/A'),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->default('pending'),
                 Tables\Filters\SelectFilter::make('course')
                     ->label('Course')
                     ->relationship(
@@ -130,6 +150,28 @@ class ReviewResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('approve')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Approve Review')
+                    ->modalDescription('Are you sure you want to approve this review? It will be visible to all students.')
+                    ->action(function ($record) {
+                        $record->update(['status' => 'approved']);
+                    })
+                    ->visible(fn ($record) => $record->status !== 'approved'),
+                Tables\Actions\Action::make('reject')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Reject Review')
+                    ->modalDescription('Are you sure you want to reject this review? It will be hidden from everyone, including the student who wrote it.')
+                    ->action(function ($record) {
+                        $record->update(['status' => 'rejected']);
+                    })
+                    ->visible(fn ($record) => $record->status !== 'rejected'),
                 Tables\Actions\DeleteAction::make()
                     ->label('Delete')
                     ->modalHeading('Delete Review')

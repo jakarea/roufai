@@ -92,20 +92,7 @@
                     Sign In
                 </button>
             </form>
-
-            <!-- Test Credentials Info -->
-            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p class="text-sm text-blue-800 font-medium mb-2">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Test Accounts:
-                </p>
-                <div class="space-y-1 text-xs text-blue-700">
-                    <p><strong>Admin:</strong> admin@roufai.com</p>
-                    <p><strong>Instructor:</strong> instructor@roufai.com</p>
-                    <p><strong>Student:</strong> student@roufai.com</p>
-                    <p class="mt-1"><strong>Password:</strong> password</p>
-                </div>
-            </div>
+ 
         </div>
 
         <!-- Footer -->

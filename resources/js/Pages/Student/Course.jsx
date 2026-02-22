@@ -85,22 +85,17 @@ export default function Course({ auth, course, completedLessons, userReview }) {
         });
     };
 
-    const getVideoEmbedUrl = (url) => {
-        if (!url) return null;
+    const getVideoEmbedUrl = (lesson) => {
+        if (!lesson) return null;
 
-        // YouTube
-        const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-        if (youtubeMatch) {
-            return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+        // Use video_provider and video_id directly
+        if (lesson.video_provider === 'youtube' && lesson.video_id) {
+            return `https://www.youtube.com/embed/${lesson.video_id}`;
+        } else if (lesson.video_provider === 'vimeo' && lesson.video_id) {
+            return `https://player.vimeo.com/video/${lesson.video_id}`;
         }
 
-        // Vimeo
-        const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-        if (vimeoMatch) {
-            return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-        }
-
-        return url;
+        return null;
     };
 
     const renderStars = (rating) => {
@@ -191,9 +186,9 @@ export default function Course({ auth, course, completedLessons, userReview }) {
                         {selectedLesson ? (
                             <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-purple-100 dark:border-purple-800">
                                 <div className="aspect-video bg-black">
-                                    {getVideoEmbedUrl(selectedLesson.video_url) ? (
+                                    {getVideoEmbedUrl(selectedLesson) ? (
                                         <iframe
-                                            src={getVideoEmbedUrl(selectedLesson.video_url)}
+                                            src={getVideoEmbedUrl(selectedLesson)}
                                             className="w-full h-full"
                                             allowFullScreen
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -214,16 +209,39 @@ export default function Course({ auth, course, completedLessons, userReview }) {
                                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                                         {selectedLesson.title}
                                     </h2>
-                                    <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                        {selectedLesson.description}
-                                    </p>
 
-                                    {selectedLesson.duration && (
-                                        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            <span>Duration: {selectedLesson.duration}</span>
+                                    {selectedLesson.description && (
+                                        <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                            {selectedLesson.description}
+                                        </p>
+                                    )}
+
+                                    {/* PDF Attachment Download */}
+                                    {selectedLesson.attachment_url && (
+                                        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                                                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-gray-900 dark:text-white">Lesson Attachment</p>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">Download the PDF for this lesson</p>
+                                                    </div>
+                                                </div>
+                                                <a
+                                                    href={selectedLesson.attachment_url}
+                                                    download
+                                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold text-sm flex items-center space-x-2"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                    </svg>
+                                                    <span>Download PDF</span>
+                                                </a>
+                                            </div>
                                         </div>
                                     )}
 
@@ -353,19 +371,21 @@ export default function Course({ auth, course, completedLessons, userReview }) {
                                                                 </svg>
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className={`font-medium text-sm ${
-                                                                    isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-gray-900 dark:text-white'
-                                                                }`}>
-                                                                    {lesson.title}
-                                                                </p>
+                                                                <div className="flex items-center justify-between">
+                                                                    <p className={`font-medium text-sm ${
+                                                                        isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-gray-900 dark:text-white'
+                                                                    }`}>
+                                                                        {lesson.title}
+                                                                    </p>
+                                                                    {lesson.duration && (
+                                                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">
+                                                                            {lesson.duration} min
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                                 {lesson.description && (
                                                                     <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">
                                                                         {lesson.description}
-                                                                    </p>
-                                                                )}
-                                                                {lesson.duration && (
-                                                                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                                                        {lesson.duration}
                                                                     </p>
                                                                 )}
                                                             </div>

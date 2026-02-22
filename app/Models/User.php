@@ -27,6 +27,7 @@ class User extends Authenticatable
         'avatar_url',
         'phone',
         'address',
+        'total_learning_time',
     ];
 
     /**

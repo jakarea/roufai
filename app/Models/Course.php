@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Course extends Model
 {
@@ -19,6 +20,7 @@ class Course extends Model
         'type',
         'price',
         'thumbnail_url',
+        'thumbnail_path',
         'is_published',
         'slug',
     ];
@@ -27,6 +29,10 @@ class Course extends Model
         'type' => 'string',
         'price' => 'integer',
         'is_published' => 'boolean',
+    ];
+
+    protected $appends = [
+        'thumbnail_url',
     ];
 
     /**
@@ -91,5 +97,17 @@ class Course extends Model
     public function getAverageRatingAttribute(): float
     {
         return $this->reviews()->avg('rating') ?? 0.0;
+    }
+
+    /**
+     * Get the thumbnail URL (prefer thumbnail_path over thumbnail_url)
+     */
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        if ($this->thumbnail_path) {
+            return Storage::url($this->thumbnail_path);
+        }
+
+        return $this->attributes['thumbnail_url'] ?? null;
     }
 }
