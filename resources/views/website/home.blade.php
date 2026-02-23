@@ -214,28 +214,8 @@
                 </div>
             </div>
         </div>
-        <div class="hero-slide absolute inset-0 w-full h-full">
-            <div class="absolute inset-0 w-full h-full">
-                <img src="{{ asset('website-images/hero-2.png') }}" alt="Hero Image" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-[#000]/50"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
-            </div>
-            <div class="container-x relative h-full flex items-center">
-                <div class="max-w-2xl py-20 md:py-28 lg:py-32">
-                    <h1
-                        class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
-                         ইন্ডাস্ট্রি এক্সপার্টদের গাইডলাইনে নিজেকে দক্ষ করে তুলুন
-                    </h1>
-                    <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
-                        সাধারণ দক্ষতা দিয়ে আর নয়, নিজেকে আপডেট করুন ফিউচার টেকনোলজির সাথে। আজই শুরু হোক আপনার AI জার্নি।
-                    </p>
-                    <a href="{{ route('courses') }}"
-                        class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
-                        ফ্রি ক্লাস করুন
-                    </a>
-                </div>
-            </div>
-        </div> 
+ 
+ 
 
 
         <!-- Slider Controls -->
