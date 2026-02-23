@@ -27,7 +27,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@100..900&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    @vite(['resources/css/app.css', 'resources/css/website.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/website.css', 'resources/js/website.js'])
 
     <!-- Custom Styles -->
     <style>
