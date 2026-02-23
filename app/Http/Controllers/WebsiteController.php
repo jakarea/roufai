@@ -124,7 +124,10 @@ class WebsiteController extends Controller
 
         return view('website.course-details', compact(
             'course',
-            'isEnrolled'
+            'isEnrolled',
+            'avgRating',
+            'hours',
+            'minutes'
         ));
     }
 

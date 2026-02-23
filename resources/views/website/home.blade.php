@@ -431,7 +431,7 @@
 
                 <div class="p-5 lg:p-7">
                     <div class="relative z-40">
-                        <a href="{{ route('course.details', $course->slug) }}"
+                        <a href="{{ route('courses.overview', $course->slug) }}"
                             class="font-semibold text-sm lg:text-lg leading-[140%] text-[#E2E8F0] mb-2 lg:mb-2.5 block">
                             {{ $course->title }}</a>
                         <p class="text-xs font-normal text-[#ababab]">
@@ -510,10 +510,10 @@
                         @endif
 
                         <div class="flex items-center gap-x-3">
-                            <a href="{{ route('course.details', $course->slug) }}" class="text-[#fff] font-normal text-xs">
+                            <a href="{{ route('courses.overview', $course->slug) }}" class="text-[#fff] font-normal text-xs">
                                 বিস্তারিত দেখুন
                             </a>
-                            <a href="{{ route('course.details', $course->slug) }}"
+                            <a href="{{ route('courses.overview', $course->slug) }}"
                                 class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1 lg:p-1.5 px-2 lg:px-4 font-medium text-xs text-[#fff] anim hover:text-primary group">
                                 এনরোল করুন
                             </a>
