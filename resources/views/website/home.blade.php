@@ -168,10 +168,62 @@
 
     <!-- Hero Slider -->
     <div class="hero-slider relative w-full min-h-125 md:min-h-150 lg:min-h-screen ">
+
         <!-- Slide 1 -->
         <div class="hero-slide active absolute inset-0 w-full h-full">
             <div class="absolute inset-0 w-full h-full">
-                <img src="{{ asset('website-images/hero-1.png') }}" alt="Hero Image" class="w-full h-full object-cover">
+                <img src="{{ asset('website-images/hero-1.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-[#000]/50"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
+            </div>
+            <div class="container-x relative h-full flex items-center">
+                <div class="max-w-2xl py-20 md:py-28 lg:py-32">
+                    <h1
+                        class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
+                        ইন্ডাস্ট্রি এক্সপার্টদের গাইডলাইনে নিজেকে দক্ষ করে তুলুন
+                    </h1>
+                    <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
+                        শুধু ভিডিও টিউটোরিয়াল নয়, পাচ্ছেন সরাসরি মেন্টরের সাপোর্ট এবং রিয়েল লাইফ প্রজেক্টের অভিজ্ঞতা।
+                    </p>
+                    <a href="{{ route('courses') }}"
+                        class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
+                        এখনই ভর্তি হোন 
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+
+                <div class="hero-slide absolute inset-0 w-full h-full">
+            <div class="absolute inset-0 w-full h-full">
+                <img src="{{ asset('website-images/hero-2.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-[#000]/50"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
+            </div>
+            <div class="container-x relative h-full flex items-center">
+                <div class="max-w-2xl py-20 md:py-28 lg:py-32">
+                    <h1
+                        class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
+                        AI - এর শক্তিতে গড়ুন আগামীর ক্যারিয়ার
+                    </h1>
+                    <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
+                        সাধারণ দক্ষতা দিয়ে আর নয়, নিজেকে আপডেট করুন ফিউচার টেকনোলজির সাথে। আজই শুরু হোক আপনার AI জার্নি।
+                    </p>
+                    <a href="{{ route('courses') }}"
+                        class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
+                        ফ্রি ক্লাস করুন
+                    </a>
+                </div>
+            </div>
+        </div>
+       
+
+        <!-- Slide 3 -->
+
+         <div class="hero-slide absolute inset-0 w-full h-full">
+            <div class="absolute inset-0 w-full h-full">
+                <img src="{{ asset('website-images/hero-3.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-[#000]/50"></div>
                 <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
             </div>
@@ -192,32 +244,7 @@
             </div>
         </div>
 
-        <div class="hero-slide absolute inset-0 w-full h-full">
-            <div class="absolute inset-0 w-full h-full">
-                <img src="{{ asset('website-images/hero-2.png') }}" alt="Hero Image" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-[#000]/50"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
-            </div>
-            <div class="container-x relative h-full flex items-center">
-                <div class="max-w-2xl py-20 md:py-28 lg:py-32">
-                    <h1
-                        class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
-                        AI - এর শক্তিতে গড়ুন আগামীর ক্যারিয়ার
-                    </h1>
-                    <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
-                        সাধারণ দক্ষতা দিয়ে আর নয়, নিজেকে আপডেট করুন ফিউচার টেকনোলজির সাথে। আজই শুরু হোক আপনার AI জার্নি।
-                    </p>
-                    <a href="{{ route('courses') }}"
-                        class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
-                        ফ্রি ক্লাস করুন
-                    </a>
-                </div>
-            </div>
-        </div>
  
- 
-
-
         <!-- Slider Controls -->
         <div class="absolute bottom-8 left-0 right-0 z-50">
             <div class="container-x">
@@ -230,6 +257,9 @@
                         <button
                             class="slider-dot w-3 h-3 rounded-full bg-[#fff]/30 hover:bg-[#fff]/50 transition-all duration-300"
                             data-slide="1"></button>
+                        <button
+                            class="slider-dot w-3 h-3 rounded-full bg-[#fff]/30 hover:bg-[#fff]/50 transition-all duration-300"
+                            data-slide="2"></button>
                     </div>
                     <!-- Arrow Navigation -->
                     <div class="flex gap-3">
