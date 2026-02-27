@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\WebsiteController;
+use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 
 // Website routes (public pages)
@@ -11,10 +12,11 @@ Route::get('/', [WebsiteController::class, 'index'])->name('home');
 Route::get('/courses', [WebsiteController::class, 'courses'])->name('courses');
 Route::get('/courses/{slug}', [WebsiteController::class, 'courseDetails'])->name('courses.overview');
 Route::get('/expert-connection', [WebsiteController::class, 'expertConnection'])->name('expert.connection');
-Route::get('/blog', [WebsiteController::class, 'blogIndex'])->name('blog.index');
-Route::get('/blog/{slug}', [WebsiteController::class, 'blogShow'])->name('blog.show');
+Route::get('/ai-update', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/ai-update/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 // Course enrollment (requires authentication)
+Route::get('/courses/{id}/enroll', [WebsiteController::class, 'showEnrollmentPage'])->name('courses.enroll.page');
 Route::post('/courses/{id}/enroll', [WebsiteController::class, 'enroll'])->name('courses.enroll');
 
 // Bootcamp enrollment request (guest users can submit)
@@ -24,6 +26,7 @@ Route::post('/bootcamp/enroll', [WebsiteController::class, 'submitBootcampEnroll
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
 
 // Student routes (protected by auth and role middleware)
 Route::middleware(['auth', 'role:student'])->prefix('student')->group(function () {

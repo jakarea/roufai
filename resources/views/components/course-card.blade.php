@@ -1,4 +1,9 @@
-@props(['course'])
+@props(['course', 'enrolledCourseIds' => [], 'pendingRequestCourseIds' => []])
+
+@php
+    $isEnrolled = in_array($course->id, $enrolledCourseIds);
+    $hasPendingRequest = in_array($course->id, $pendingRequestCourseIds);
+@endphp
 
 <div
     class="w-full border-[1px] border-[#fff] rounded-lg lg:rounded-[21px] bg-[#232323] anim effect-card relative flex flex-col justify-between">
@@ -32,30 +37,44 @@
                 {{ $course->title }}</a>
             <p class="text-xs font-normal text-[#ababab]">
             <ul class="flex items-center gap-x-2 mt-2 lg:mt-2.5">
+                @php
+                    $totalVideos = 0;
+                    if($course->modules && $course->modules->count() > 0) {
+                        foreach($course->modules as $module) {
+                            if($module->lessons) {
+                                $totalVideos += $module->lessons->count();
+                            }
+                        }
+                    }
+                @endphp
                 @if($totalVideos > 0)
                 <li>
                     <span class="text-xs font-normal text-[#ababab] block">
                         🎥 {{ $totalVideos }}টি ভিডিও
                     </span>
                 </li>
-                @if($course->modules->count() > 0)
+                @endif
+                @if($course->modules && $course->modules->count() > 0)
+                @if($totalVideos > 0)
                 <li>
                     <span class="text-xs font-normal text-[#ababab] block">
                         |
                     </span>
                 </li>
+                @endif
                 <li>
                     <span class="text-xs font-normal text-[#ababab] block">
                         📁 {{ $course->modules->count() }}টি মডিউল
                     </span>
                 </li>
                 @endif
-                @endif
+                @if($totalVideos > 0 || ($course->modules && $course->modules->count() > 0))
                 <li>
                     <span class="text-xs font-normal text-[#ababab] block">
                         |
                     </span>
                 </li>
+                @endif
                 <li>
                     <span class="text-xs font-normal text-[#ababab] block">
                         ⏰ লাইফটাইম এক্সেস
@@ -100,13 +119,25 @@
             @endif
 
             <div class="flex items-center gap-x-3">
-                <a href="{{ route('courses.overview', $course->slug) }}" class="text-[#fff] font-normal text-xs">
-                    বিস্তারিত দেখুন
-                </a>
-                <a href="{{ route('courses.overview', $course->slug) }}"
-                    class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1 lg:p-1.5 px-2 lg:px-4 font-medium text-xs text-[#fff] anim hover:text-primary group">
-                    এনরোল করুন
-                </a>
+                @if($isEnrolled)
+                    <!-- User is enrolled - show Go to Course button -->
+                    <a href="{{ route('student.course', $course->id) }}"
+                        class="inline-flex font-golos justify-center items-center bg-green-600 border border-green-500/70 hover:bg-green-700 rounded-md lg:rounded-[10px] p-1 lg:p-1.5 px-2 lg:px-4 font-medium text-xs text-[#fff] anim transition-all duration-300">
+                        কোর্সে যান →
+                    </a>
+                @elseif($hasPendingRequest)
+                    <!-- User has pending request - show pending status -->
+                    <button disabled
+                        class="inline-flex font-golos justify-center items-center bg-yellow-600/80 cursor-not-allowed rounded-md lg:rounded-[10px] p-1 lg:p-1.5 px-2 lg:px-4 font-medium text-xs text-[#fff]">
+                        ⏳ প্রক্রিয়াধীন
+                    </button>
+                @else
+                    <!-- Show View Details button - links to course details page -->
+                    <a href="{{ route('courses.overview', $course->slug) }}"
+                        class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1 lg:p-1.5 px-2 lg:px-4 font-medium text-xs text-[#fff] anim hover:text-primary group">
+                        বিস্তারিত দেখুন
+                    </a>
+                @endif
             </div>
         </div>
     </div>

@@ -40,7 +40,7 @@ class CourseResource extends Resource
             ->schema([
                 // STEP 1: Course Information
                 Forms\Components\Section::make('Course Information')
-                    ->description('Step 1 of 3: Basic information about your course')
+                    ->description('Step 1 of 2: Basic information about your course')
                     ->schema([
                         Forms\Components\Select::make('category_id')
                             ->relationship('category', 'name')
@@ -94,37 +94,42 @@ class CourseResource extends Resource
                     ])
                     ->columns(2),
 
-                // STEP 2: Modules with Lessons
-                Forms\Components\Section::make('Modules')
-                    ->description('Step 2 of 3: Create modules for your course (drag to reorder)')
+                // STEP 2: Modules & Lessons
+                Forms\Components\Section::make('Modules & Lessons')
+                    ->description('Step 2 of 2: Add modules and lessons to your course')
                     ->schema([
-                        Forms\Components\Repeater::make('course_modules')
-                            ->label('Modules')
+                        Forms\Components\Repeater::make('modules')
+                            ->relationship()
                             ->schema([
-                                Forms\Components\TextInput::make('title')
-                                    ->label('Module Title')
-                                    ->required()
-                                    ->placeholder('e.g., Introduction, Getting Started, Advanced Topics')
-                                    ->columnSpanFull(),
-                                Forms\Components\Textarea::make('description')
-                                    ->label('Module Description')
-                                    ->rows(2)
-                                    ->placeholder('Brief description of what students will learn in this module')
-                                    ->columnSpanFull(),
+                                Forms\Components\Section::make('Module Information')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('title')
+                                            ->label('Module Title')
+                                            ->required()
+                                            ->columnSpanFull(),
+                                        Forms\Components\Textarea::make('description')
+                                            ->label('Description')
+                                            ->rows(2)
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2),
+
                                 Forms\Components\Section::make('Lessons')
                                     ->description('Add lessons to this module')
                                     ->schema([
                                         Forms\Components\Repeater::make('lessons')
-                                            ->label('Lessons')
+                                            ->relationship()
                                             ->schema([
                                                 Forms\Components\TextInput::make('title')
                                                     ->label('Lesson Title')
                                                     ->required()
                                                     ->columnSpan(2),
-                                                Forms\Components\Textarea::make('description')
-                                                    ->label('Description')
-                                                    ->rows(2)
-                                                    ->columnSpanFull(),
+                                                Forms\Components\TextInput::make('duration_in_minutes')
+                                                    ->label('Duration (min)')
+                                                    ->numeric()
+                                                    ->minValue(1)
+                                                    ->default(0)
+                                                    ->columnSpan(1),
                                                 Forms\Components\Select::make('video_provider')
                                                     ->label('Video Platform')
                                                     ->options([
@@ -133,20 +138,25 @@ class CourseResource extends Resource
                                                     ])
                                                     ->required()
                                                     ->default('youtube')
+                                                    ->live()
                                                     ->columnSpan(1),
                                                 Forms\Components\TextInput::make('video_id')
                                                     ->label('Video ID')
                                                     ->required()
+                                                    ->placeholder(fn (callable $get) => $get('../../video_provider') === 'youtube'
+                                                        ? 'YouTube Video ID (e.g., dQw4w9WgXcQ)'
+                                                        : 'Vimeo Video ID (e.g., 123456789)')
+                                                    ->helperText(fn (callable $get) => $get('../../video_provider') === 'youtube'
+                                                        ? 'Paste the YouTube video ID only (from https://youtube.com/watch?v=VIDEO_ID)'
+                                                        : 'Paste the Vimeo video ID only (from https://vimeo.com/VIDEO_ID)')
                                                     ->columnSpan(2),
-                                                Forms\Components\TextInput::make('duration_in_minutes')
-                                                    ->label('Duration (minutes)')
-                                                    ->required()
-                                                    ->numeric()
-                                                    ->minValue(1)
-                                                    ->default(0)
-                                                    ->columnSpan(1),
+                                                Forms\Components\Textarea::make('description')
+                                                    ->label('Description')
+                                                    ->rows(2)
+                                                    ->columnSpanFull(),
                                                 Forms\Components\Toggle::make('is_free_preview')
                                                     ->label('Free Preview')
+                                                    ->helperText('Allow students to watch this lesson without enrolling')
                                                     ->default(false)
                                                     ->columnSpan(1),
                                                 Forms\Components\FileUpload::make('attachment_path')
@@ -154,7 +164,7 @@ class CourseResource extends Resource
                                                     ->acceptedFileTypes(['application/pdf'])
                                                     ->directory('lesson-attachments')
                                                     ->maxSize(10240)
-                                                    ->columnSpanFull(),
+                                                    ->columnSpan(1),
                                             ])
                                             ->columns(2)
                                             ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
@@ -165,11 +175,10 @@ class CourseResource extends Resource
                                     ])
                                     ->columns(1),
                             ])
-                            ->columns(1)
+                            ->columns(2)
                             ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
                             ->collapsible()
                             ->cloneable()
-                            ->orderable()
                             ->default([])
                             ->columnSpanFull(),
                     ])
@@ -240,147 +249,8 @@ class CourseResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->with(['modules', 'lessons']);
-
-        // Only show current instructor's courses
-        if (Auth::check() && Auth::user()->role === 'instructor') {
-            $query->where('instructor_id', Auth::id());
-        }
-
-        return $query;
-    }
-
-    public static function mutateFormDataBeforeCreate(array $data): array
-    {
-        // Set instructor_id to current user
-        $data['instructor_id'] = Auth::id();
-
-        // Extract modules and lessons from form data
-        $courseModules = $data['course_modules'] ?? [];
-        unset($data['course_modules']);
-
-        // Store for later use in afterCreate
-        $data['_modules'] = $courseModules;
-
-        return $data;
-    }
-
-    public static function afterCreate($record, array $data): void
-    {
-        // Handle modules and lessons creation
-        $courseModules = $data['_modules'] ?? [];
-
-        foreach ($courseModules as $index => $moduleData) {
-            $lessons = $moduleData['lessons'] ?? [];
-            unset($moduleData['lessons']);
-
-            // Create module
-            $module = new \App\Models\Module([
-                'title' => $moduleData['title'],
-                'description' => $moduleData['description'] ?? null,
-                'course_id' => $record->id,
-                'order' => $index,
-            ]);
-            $module->save();
-
-            // Create lessons for this module
-            foreach ($lessons as $lessonIndex => $lessonData) {
-                $lesson = new \App\Models\Lesson([
-                    'module_id' => $module->id,
-                    'course_id' => $record->id,
-                    'title' => $lessonData['title'],
-                    'description' => $lessonData['description'] ?? null,
-                    'video_provider' => $lessonData['video_provider'] ?? 'youtube',
-                    'video_id' => $lessonData['video_id'],
-                    'duration_in_minutes' => $lessonData['duration_in_minutes'] ?? 0,
-                    'is_free_preview' => $lessonData['is_free_preview'] ?? false,
-                    'attachment_path' => $lessonData['attachment_path'] ?? null,
-                    'order_index' => $lessonIndex,
-                ]);
-                $lesson->save();
-            }
-        }
-    }
-
-    public static function mutateFormDataBeforeUpdate(array $data, $record): array
-    {
-        // Load existing modules and lessons if not being edited
-        if (!isset($data['course_modules'])) {
-            $data['course_modules'] = [];
-
-            foreach ($record->modules()->orderBy('order')->get() as $module) {
-                $moduleData = [
-                    'title' => $module->title,
-                    'description' => $module->description,
-                ];
-
-                // Load lessons for this module
-                $moduleData['lessons'] = [];
-                foreach ($module->lessons()->orderBy('order_index')->get() as $lesson) {
-                    $moduleData['lessons'][] = [
-                        'title' => $lesson->title,
-                        'description' => $lesson->description,
-                        'video_provider' => $lesson->video_provider,
-                        'video_id' => $lesson->video_id,
-                        'duration_in_minutes' => $lesson->duration_in_minutes,
-                        'is_free_preview' => $lesson->is_free_preview,
-                        'attachment_path' => $lesson->attachment_path,
-                    ];
-                }
-
-                $data['course_modules'][] = $moduleData;
-            }
-        }
-
-        // Extract modules and lessons from form data for saving
-        $courseModules = $data['course_modules'] ?? [];
-        unset($data['course_modules']);
-
-        // Store for later use in afterUpdate
-        $data['_modules'] = $courseModules;
-
-        return $data;
-    }
-
-    public static function afterUpdate($record, array $data): void
-    {
-        // Delete existing modules and lessons (will be recreated)
-        $record->modules()->delete();
-        $record->lessons()->delete();
-
-        // Handle modules and lessons recreation
-        $courseModules = $data['_modules'] ?? [];
-
-        foreach ($courseModules as $index => $moduleData) {
-            $lessons = $moduleData['lessons'] ?? [];
-            unset($moduleData['lessons']);
-
-            // Create module
-            $module = new \App\Models\Module([
-                'title' => $moduleData['title'],
-                'description' => $moduleData['description'] ?? null,
-                'course_id' => $record->id,
-                'order' => $index,
-            ]);
-            $module->save();
-
-            // Create lessons for this module
-            foreach ($lessons as $lessonIndex => $lessonData) {
-                $lesson = new \App\Models\Lesson([
-                    'module_id' => $module->id,
-                    'course_id' => $record->id,
-                    'title' => $lessonData['title'],
-                    'description' => $lessonData['description'] ?? null,
-                    'video_provider' => $lessonData['video_provider'] ?? 'youtube',
-                    'video_id' => $lessonData['video_id'],
-                    'duration_in_minutes' => $lessonData['duration_in_minutes'] ?? 0,
-                    'is_free_preview' => $lessonData['is_free_preview'] ?? false,
-                    'attachment_path' => $lessonData['attachment_path'] ?? null,
-                    'order_index' => $lessonIndex,
-                ]);
-                $lesson->save();
-            }
-        }
+        return parent::getEloquentQuery()->with(['modules.lessons'])
+            ->where('instructor_id', Auth::id());
     }
 
     public static function getRelations(): array

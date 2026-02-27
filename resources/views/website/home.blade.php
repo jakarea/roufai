@@ -1,176 +1,27 @@
 @extends('layouts.website')
 
-@section('title', 'আব্দুর রউফ - AI Creative Training Platform')
-@section('description', 'বাংলাদেশের শীর্ষ এআই ক্রিয়েটিভ ট্রেনিং প্ল্যাটফর্ম')
+@section('title', 'আব্দুর রউফ - বাংলাদেশের সেরা AI ক্রিয়েটিভ ট্রেনিং প্ল্যাটফর্ম | AI কোর্স ও বুটক্যাম্প')
+@section('description', 'AI দিয়ে ইমেজ, ভিডিও, মিউজিক ও ভয়েস তৈরি শিখুন। বিগিনার থেকে অ্যাডভান্সড লেভেল, লাইভ ক্লাস এবং রিয়েল প্রজেক্ট সহ কমপ্লিট কোর্স। আজই শুরু করুন!')
+@section('keywords', 'AI কোর্স, AI ট্রেনিং, আব্দুর রউফ, Midjourney কোর্স, AI ভিডিও এডিটিং, AI মিউজিক জেনারেশন, ChatGPT কোর্স, AI টুলস বাংলাদেশ')
 
 @section('content')
 
+<!-- hero ellipse -->
 <img src="{{ asset('website-images/hero-ellipse.svg') }}" alt="ellipse"
     class="absolute left-0 top-0 lg:object-contain lg:h-auto">
 <!-- hero ellipse -->
 
 <!-- hero slider section start -->
-<section class="w-full relative overflow-hidden ">
+<section class="w-full relative overflow-hidden" style="height: 100vh;">
+
+    <!-- Include Header -->
+@include('website.partials.header')
     <div class="absolute inset-0 w-full h-full bg-[#000]/50">
-        <!-- header section start -->
-        <header class="w-full pt-5 lg:pt-10 relative z-9999">
-            <div class="container-x">
-                <div
-                    class="w-full grid grid-cols-12 relative bg-[#000]/40 rounded-md p-2 lg:p-2.5 lg:rounded-[14px] lg:items-center lg:px-5">
-                    <!-- logo -->
-                    <div class="text-start col-span-2">
-                        <a href="{{ route('home') }}">
-                            <img src="{{ asset('website-images/logo.png') }}" alt="logo" class="max-w-20 md:max-w-[95px] lg:max-w-[110px]">
-                        </a>
-                    </div>
-                    <!-- logo -->
-
-                    <div class="navbar flex flex-col gap-y-4 justify-center items-center col-span-10 lg:flex-row">
-                        <!-- menu -->
-                        <div
-                            class="w-full absolute left-0 top-10 min-h-[130px] bg-card z-50 flex justify-center p-4 rounded-md hidden lg:!flex lg:relative lg:bg-transparent lg:min-h-auto lg:left-auto lg:top-auto min-w-[75%]"
-                            id="mobile-menu">
-                            <ul class="flex flex-col lg:flex-row gap-y-3 lg:gap-y-0 lg:gap-x-[30px] text-center">
-                                <li>
-                                    <a href="{{ route('home') }}"
-                                        class="block font-normal text-base lg:text-xl text-[#ABABAB] anim hover:text-[#fff] {{ request()->routeIs('home') ? 'text-[#fff]' : '' }}">
-                                        হোম
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('courses') }}"
-                                        class="block font-normal text-base lg:text-xl text-[#ABABAB] anim hover:text-[#fff] {{ request()->routeIs('courses') ? 'text-[#fff]' : '' }}">
-                                        কোর্সসমূহ
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('expert.connection') }}"
-                                        class="block font-normal text-base lg:text-xl text-[#ABABAB] anim hover:text-[#fff] {{ request()->routeIs('expert.connection') ? 'text-[#fff]' : '' }}">
-                                        এক্সপার্ট কানেকশন
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('blog.index') }}"
-                                        class="block font-normal text-base lg:text-xl text-[#ABABAB] anim hover:text-[#fff] {{ request()->routeIs('blog.*') ? 'text-[#fff]' : '' }}">
-                                        AI আপডেট
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <!-- menu -->
-
-                        <!-- actions -->
-                        <div class="w-full lg:min-w-[25%]">
-                            <ul class="flex gap-x-3 lg:gap-x-[30px] text-center items-center justify-end">
-
-                                <li>
-                                    <button type="button" id="search-toggle"
-                                        class="block text-[#ABABAB] hover:text-[#fff] anim cursor-pointer relative z-999">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                            stroke="currentColor" class="w-5 h-5 lg:w-6 lg:h-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                        </svg>
-                                    </button>
-                                </li>
-                                <li>
-                                    <a href="{{ route('login') }}" class="block font-normal text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">
-                                        লগইন
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#"
-                                        class="inline-flex shrink-0 lg:min-w-40 font-golos justify-center items-center bg-submit rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-3 anim hover:!bg-lime md:text-base px-3 pr-2 lg:text-lg hover:text-primary group lg:my-0 lg:order-1 border border-[#9F93A7]/70 lg:py-3 lg:px-5 lg:pr-4">
-                                        ফ্রি টুলস
-                                        <svg class="w-5 lg:w-8" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <rect x="0.5" y="29.5" width="29" height="29" rx="14.5" transform="rotate(-90 0.5 29.5)"
-                                                stroke="white" />
-                                            <path
-                                                d="M18.3154 16.9887L18.3154 11.6854M18.3154 11.6854L13.0121 11.6854M18.3154 11.6854L11.6862 18.3146"
-                                                stroke="white" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                    </a>
-                                </li>
-                                <li class="lg:hidden">
-                                    <button type="button" id="mobile-menu-toggle">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                            stroke="currentColor" class="size-6 text-[#fff]">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M3.75 6.75h16.5M3.75 12h16.5M12 17.25h8.25" />
-                                        </svg>
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                        <!-- actions -->
-                    </div>
-                </div>
-            </div>
-        </header>
-        <!-- header section end -->
-
-        <!-- Search Overlay -->
-        <div id="search-overlay"
-            class="fixed inset-0 w-full h-full bg-[#0A0C19]/70 backdrop-blur-md z-9999 hidden opacity-0 transition-opacity duration-300">
-            <div class="w-full h-full flex items-center justify-center p-4">
-                <div class="w-full max-w-3xl">
-                    <!-- Close Button -->
-                    <div class="flex justify-end mb-8">
-                        <button type="button" id="search-close"
-                            class="text-[#fff] hover:text-[#E850FF] transition-colors duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                stroke="currentColor" class="w-8 h-8 lg:w-10 lg:h-10">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Search Form -->
-                    <form action="{{ route('courses') }}" method="GET" class="w-full">
-                        <div class="relative">
-                            <input type="text" name="search" id="search-input" placeholder="কোর্স খুঁজুন..."
-                                class="w-full bg-[#131620] border-2 border-[#E850FF]/30 rounded-lg lg:rounded-2xl py-4 lg:py-6 px-6 lg:px-8 text-[#fff] text-lg lg:text-2xl placeholder-[#ABABAB] focus:outline-none focus:border-[#E850FF] transition-all duration-300"
-                                autocomplete="off">
-                            <button type="submit"
-                                class="absolute cursor-pointer right-4 lg:right-6 top-1/2 -translate-y-1/2 bg-[#E850FF] hover:bg-[#4941C8] text-[#fff] rounded-lg px-6 lg:px-8 py-2 lg:py-3 font-medium text-base lg:text-lg transition-all duration-300">
-                                খুঁজুন
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Popular Searches (Optional) -->
-                    <div class="mt-8 lg:mt-12">
-                        <p class="text-[#ABABAB] text-sm lg:text-base mb-4">জনপ্রিয় সার্চ:</p>
-                        <div class="flex flex-wrap gap-3">
-                            <a href="{{ route('courses') }}?search=AI"
-                                class="px-4 py-2 bg-[#fff]/10 hover:bg-[#E850FF]/20 border border-[#fff]/20 hover:border-[#E850FF]/50 rounded-full text-[#fff] text-sm lg:text-base transition-all duration-300">
-                                AI
-                            </a>
-                            <a href="{{ route('courses') }}?search=ভিডিও"
-                                class="px-4 py-2 bg-[#fff]/10 hover:bg-[#E850FF]/20 border border-[#fff]/20 hover:border-[#E850FF]/50 rounded-full text-[#fff] text-sm lg:text-base transition-all duration-300">
-                                ভিডিও এডিটিং
-                            </a>
-                            <a href="{{ route('courses') }}?search=ইমেজ"
-                                class="px-4 py-2 bg-[#fff]/10 hover:bg-[#E850FF]/20 border border-[#fff]/20 hover:border-[#E850FF]/50 rounded-full text-[#fff] text-sm lg:text-base transition-all duration-300">
-                                ইমেজ জেনারেশন
-                            </a>
-                            <a href="{{ route('courses') }}?search=মিউজিক"
-                                class="px-4 py-2 bg-[#fff]/10 hover:bg-[#E850FF]/20 border border-[#fff]/20 hover:border-[#E850FF]/50 rounded-full text-[#fff] text-sm lg:text-base transition-all duration-300">
-                                মিউজিক
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
     <!-- Hero Slider -->
-    <div class="hero-slider relative w-full min-h-125 md:min-h-150 lg:min-h-screen ">
+    <div class="hero-slider relative w-full h-full">
 
         <!-- Slide 1 -->
-        <div class="hero-slide active absolute inset-0 w-full h-full">
+        <div class="hero-slide active absolute inset-0 w-full h-full" style="opacity: 1; z-index: 10;">
             <div class="absolute inset-0 w-full h-full">
                 <img src="{{ asset('website-images/hero-1.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-[#000]/50"></div>
@@ -187,15 +38,14 @@
                     </p>
                     <a href="{{ route('courses') }}"
                         class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
-                        এখনই ভর্তি হোন 
+                        এখনই ভর্তি হোন
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Slide 2 -->
-
-                <div class="hero-slide absolute inset-0 w-full h-full">
+        <div class="hero-slide absolute inset-0 w-full h-full" style="opacity: 0; z-index: 0;">
             <div class="absolute inset-0 w-full h-full">
                 <img src="{{ asset('website-images/hero-2.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-[#000]/50"></div>
@@ -217,11 +67,9 @@
                 </div>
             </div>
         </div>
-       
 
         <!-- Slide 3 -->
-
-         <div class="hero-slide absolute inset-0 w-full h-full">
+        <div class="hero-slide absolute inset-0 w-full h-full" style="opacity: 0; z-index: 0;">
             <div class="absolute inset-0 w-full h-full">
                 <img src="{{ asset('website-images/hero-3.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-[#000]/50"></div>
@@ -244,7 +92,6 @@
             </div>
         </div>
 
- 
         <!-- Slider Controls -->
         <div class="absolute bottom-8 left-0 right-0 z-50">
             <div class="container-x">
@@ -285,6 +132,7 @@
         <div
             class="absolute bottom-0 left-0 right-0 h-48 md:h-64 lg:h-80 bg-gradient-to-t from-[#0a0a0a] via-[#000]/50 to-transparent z-40 pointer-events-none">
         </div>
+    </div>
     </div>
 </section>
 <!-- hero slider section end -->
@@ -378,9 +226,7 @@
 
                     </h5>
                     <p class="font-normal text-xs lg:text-sm leading-[140%] text-[#ABABAB] lg:max-w-[85%]">
-                       এআই দিয়ে জিঙ্গেল, ব্যাকগ্রাউন্ড স্কোর, ভয়েসওভার ও সাউন্ড ইফেক্ট তৈরি করুন।
-
-</p>
+                       এআই দিয়ে জিঙ্গেল, ব্যাকগ্রাউন্ড স্কোর, ভয়েসওভার ও সাউন্ড ইফেক্ট তৈরি করুন।</p>
                 </div>
             </div>
         </div>
@@ -389,6 +235,8 @@
     </div>
 </section>
 <!-- feature section end -->
+
+
 
 <!-- border line -->
 <div class="container-x">
@@ -1082,8 +930,104 @@
 @stop
 
 @push('scripts')
+<style>
+    .hero-slide {
+        opacity: 0 !important;
+        transition: opacity 1s ease-in-out;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .hero-slide.active {
+        opacity: 1 !important;
+        pointer-events: auto;
+        z-index: 10;
+    }
+</style>
 <script>
     console.log('🚀 Scripts loading...');
+
+    // Hero Slider
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎠 Hero slider script loaded');
+
+        const slides = document.querySelectorAll('.hero-slide');
+        const dots = document.querySelectorAll('.slider-dot');
+        const prevBtn = document.querySelector('.slider-prev');
+        const nextBtn = document.querySelector('.slider-next');
+        let currentSlide = 0;
+        let autoPlayInterval;
+
+        function goToSlide(index) {
+            // Hide current slide
+            slides[currentSlide].classList.remove('active');
+            slides[currentSlide].style.opacity = '0';
+            slides[currentSlide].style.zIndex = '0';
+
+            dots[currentSlide].classList.remove('bg-[#E850FF]');
+            dots[currentSlide].classList.add('bg-[#fff]/30');
+
+            // Update current slide index
+            currentSlide = index;
+
+            // Show new slide
+            slides[currentSlide].classList.add('active');
+            slides[currentSlide].style.opacity = '1';
+            slides[currentSlide].style.zIndex = '10';
+
+            dots[currentSlide].classList.remove('bg-[#fff]/30');
+            dots[currentSlide].classList.add('bg-[#E850FF]');
+
+            console.log(`🎠 Slide ${currentSlide + 1} activated`);
+        }
+
+        function nextSlide() {
+            const nextIndex = (currentSlide + 1) % slides.length;
+            goToSlide(nextIndex);
+        }
+
+        function prevSlide() {
+            const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+            goToSlide(prevIndex);
+        }
+
+        function startAutoPlay() {
+            autoPlayInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+        }
+
+        function stopAutoPlay() {
+            clearInterval(autoPlayInterval);
+        }
+
+        // Dot navigation
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', function() {
+                stopAutoPlay();
+                goToSlide(index);
+                startAutoPlay();
+            });
+        });
+
+        // Arrow navigation
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                stopAutoPlay();
+                prevSlide();
+                startAutoPlay();
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                stopAutoPlay();
+                nextSlide();
+                startAutoPlay();
+            });
+        }
+
+        // Start auto-play
+        startAutoPlay();
+        console.log('✅ Hero slider started!');
+    });
 
     // Countdown Timer - Simple and Direct
     document.addEventListener('DOMContentLoaded', function() {

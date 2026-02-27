@@ -116,7 +116,7 @@
 
 ### Admin Panel Configuration
 - ✅ Full width container (`maxContentWidth('full')`)
-- ✅ Custom brand name: "Rouf AI LMS"
+- ✅ Custom brand name: "Rouf AI Academy"
 - ✅ Dark mode enabled
 - ✅ Collapsible sidebar
 - ✅ Custom purple theme (#e850ff)
