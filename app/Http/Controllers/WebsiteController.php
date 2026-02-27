@@ -8,6 +8,8 @@ use App\Models\Course;
 use App\Models\Category;
 use App\Models\Enrollment;
 use App\Models\Review;
+use App\Models\BootcampConfig;
+use App\Models\EnrollmentRequest;
 
 class WebsiteController extends Controller
 {
@@ -36,11 +38,18 @@ class WebsiteController extends Controller
             ->take(6)
             ->get();
 
+        // Get active bootcamp configuration
+        $bootcampConfig = BootcampConfig::where('is_active', true)
+            ->with(['course.instructor', 'instructor'])
+            ->latest()
+            ->first();
+
         return view('website.home', compact(
             'featuredCourses',
             'courses',
             'categories',
-            'reviews'
+            'reviews',
+            'bootcampConfig'
         ));
     }
 
@@ -174,6 +183,55 @@ class WebsiteController extends Controller
             'success' => true,
             'message' => 'Successfully enrolled in the course!',
             'redirect' => route('student.course', $course->id)
+        ]);
+    }
+
+    /**
+     * Submit bootcamp enrollment request.
+     */
+    public function submitBootcampEnrollment(Request $request)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'payment_method' => 'required|in:nagad,bkash,rocket',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'payment_number' => 'required|string|max:20',
+            'transaction_id' => 'required|string|max:255',
+            'paid_amount' => 'required|numeric|min:0',
+            'course_id' => 'nullable|exists:courses,id',
+        ]);
+
+        // Get the active bootcamp config
+        $bootcampConfig = BootcampConfig::where('is_active', true)->latest()->first();
+
+        if (!$bootcampConfig) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No active bootcamp found.',
+            ], 404);
+        }
+
+        // Determine course_id
+        $courseId = $validated['course_id'] ?? $bootcampConfig->course_id;
+
+        // Create enrollment request
+        $enrollmentRequest = EnrollmentRequest::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['payment_number'], // Store payment_number in phone field
+            'course_id' => $courseId,
+            'transaction_id' => $validated['transaction_id'],
+            'payment_method' => $validated['payment_method'],
+            'payment_number' => $validated['payment_number'],
+            'amount_paid' => $validated['paid_amount'],
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'আপনার এনরোলমেন্ট রিকোয়েস্ট সফলভাবে জমা হয়েছে! আমরা শীঘ্রই আপনার পেমেন্ট যাচাই করে আপনার সাথে যোগাযোগ করবো।',
         ]);
     }
 

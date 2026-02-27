@@ -159,14 +159,8 @@
                     <!-- Course Card -->
                     <div class="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
                         <!-- Course Thumbnail -->
-                        @if($course->thumbnail)
-                        <img src="{{ $course->thumbnail }}" alt="{{ $course->title }}"
+                        <img src="{{ $course->thumbnail ?? asset('website-images/default-course-thumbnail.webp') }}" alt="{{ $course->title }}"
                             class="w-full h-48 object-cover rounded-lg mb-4">
-                        @else
-                        <div class="w-full h-48 bg-white/10 rounded-lg mb-4 flex items-center justify-center">
-                            <span class="text-[#ABABAB]">কোর্স ইমেজ</span>
-                        </div>
-                        @endif
 
                         <!-- Price -->
                         <div class="mb-4">
@@ -235,7 +229,7 @@
                             <img src="{{ $course->instructor->avatar }}" alt="{{ $course->instructor->name }}"
                                 class="w-16 h-16 rounded-full object-cover">
                             @else
-                            <img src="{{ asset('website-images/avatar.webp') }}" alt="avatar"
+                            <img src="{{ asset('website-images/user-avatar.webp') }}" alt="avatar"
                                 class="w-16 h-16 rounded-full object-cover">
                             @endif
                             <div>
