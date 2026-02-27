@@ -1326,6 +1326,25 @@ body {
   border-radius: 0.5rem;
 }
 
+/* Custom height utilities for hero slider */
+.min-h-125 {
+  min-height: 31.25rem; /* 500px */
+}
+
+.min-h-150 {
+  min-height: 37.5rem; /* 600px */
+}
+
+@media (min-width: 768px) {
+  .md\:min-h-125 {
+    min-height: 37.5rem; /* 600px */
+  }
+
+  .md\:min-h-150 {
+    min-height: 43.75rem; /* 700px */
+  }
+}
+
 /* Smooth fade animation for hero slider */
 @keyframes fadeIn {
   from {

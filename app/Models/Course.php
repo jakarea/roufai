@@ -21,6 +21,7 @@ class Course extends Model
         'price',
         'thumbnail_url',
         'thumbnail_path',
+        'video_url',
         'is_published',
         'slug',
     ];

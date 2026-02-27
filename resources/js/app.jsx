@@ -3,7 +3,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 
 createInertiaApp({
-    title: (title) => `${title} - Rouf AI LMS`,
+    title: (title) => `${title} - Rouf AI Academy`,
     resolve: async (name) => {
         const pages = import.meta.glob('./Pages/**/*.jsx');
         return await pages[`./Pages/${name}.jsx`]();

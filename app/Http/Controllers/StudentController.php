@@ -405,36 +405,56 @@ class StudentController extends Controller
      */
     public function submitReview(Request $request, $id)
     {
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|max:1000',
-        ]);
+        try {
+            $request->validate([
+                'rating' => 'required|integer|min:1|max:5',
+                'comment' => 'required|string|max:1000',
+            ]);
 
-        $student = Auth::user();
+            $student = Auth::user();
 
-        // Verify enrollment
-        $enrollment = Enrollment::where('user_id', $student->id)
-            ->where('course_id', $id)
-            ->firstOrFail();
+            // Verify enrollment
+            $enrollment = Enrollment::where('user_id', $student->id)
+                ->where('course_id', $id)
+                ->firstOrFail();
 
-        // Check if review already exists
-        $existingReview = Review::where('user_id', $student->id)
-            ->where('course_id', $id)
-            ->first();
+            // Check if review already exists
+            $existingReview = Review::where('user_id', $student->id)
+                ->where('course_id', $id)
+                ->first();
 
-        if ($existingReview) {
-            return back()->with('error', 'You have already reviewed this course.');
+            if ($existingReview) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'আপনি ইতিমধ্যে এই কোর্সের জন্য রিভিউ দিয়েছেন।'
+                ], 400);
+            }
+
+            // Create review with pending status
+            $review = Review::create([
+                'user_id' => $student->id,
+                'course_id' => $id,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+                'status' => 'pending', // Reviews need approval
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'আপনার মতামত সফলভাবে জমা হয়েছে! অনুমোদনের পরে এটি প্রদর্শিত হবে।',
+                'review' => $review
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Review submission failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'দুঃখিত, আপনার মতামত জমা দেওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।'
+            ], 500);
         }
-
-        // Create review
-        Review::create([
-            'user_id' => $student->id,
-            'course_id' => $id,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-        ]);
-
-        return back()->with('success', 'Review submitted successfully!');
     }
 
     /**

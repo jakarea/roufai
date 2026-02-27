@@ -12,6 +12,9 @@ class EnrollmentRequest extends Model
 
     protected $fillable = [
         'user_id',
+        'name',
+        'email',
+        'phone',
         'course_id',
         'transaction_id',
         'payment_method',

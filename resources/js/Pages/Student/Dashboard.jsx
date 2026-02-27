@@ -219,11 +219,11 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-purple-100 dark:border-purple-800">
+                    <div className="bg-white rounded-xl p-6 shadow-lg border border-purple-100">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Enrolled Courses</p>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                                <p className="text-gray-600 text-sm font-medium">Enrolled Courses</p>
+                                <p className="text-3xl font-bold text-gray-900 mt-2">
                                     {enrollments.length}
                                 </p>
                             </div>
@@ -235,11 +235,11 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-purple-100 dark:border-purple-800">
+                    <div className="bg-white rounded-xl p-6 shadow-lg border border-purple-100">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Learning Time</p>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                                <p className="text-gray-600 text-sm font-medium">Total Learning Time</p>
+                                <p className="text-3xl font-bold text-gray-900 mt-2">
                                     {formatLearningTime(totalLearningTime)}
                                 </p>
                             </div>
@@ -251,11 +251,11 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-purple-100 dark:border-purple-800">
+                    <div className="bg-white rounded-xl p-6 shadow-lg border border-purple-100">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Certificates Earned</p>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                                <p className="text-gray-600 text-sm font-medium">Certificates Earned</p>
+                                <p className="text-3xl font-bold text-gray-900 mt-2">
                                     {certificatesCount || 0}
                                 </p>
                             </div>
@@ -270,15 +270,15 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
 
                 {/* My Courses Section */}
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">My Enrolled Courses</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">My Enrolled Courses</h2>
 
                     {enrollments.length === 0 ? (
-                        <div className="bg-white dark:bg-gray-800 rounded-xl p-12 text-center shadow-lg border border-purple-100 dark:border-purple-800">
+                        <div className="bg-white rounded-xl p-12 text-center shadow-lg border border-purple-100">
                             <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No courses yet</h3>
-                            <p className="text-gray-600 dark:text-gray-400">You haven't enrolled in any courses yet.</p>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No courses yet</h3>
+                            <p className="text-gray-600">You haven't enrolled in any courses yet.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -288,12 +288,18 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
                                     href={`/student/courses/${enrollment.course.id}`}
                                     className="group"
                                 >
-                                    <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-purple-100 dark:border-purple-800 transition-all duration-300 hover:shadow-2xl hover:scale-105">
+                                    <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-purple-100 transition-all duration-300 hover:shadow-2xl hover:scale-105">
                                         {/* Course Thumbnail */}
                                         <div className="relative h-48 bg-gradient-to-br from-purple-400 to-pink-400">
-                                            {enrollment.course.thumbnail_path || enrollment.course.thumbnail_url ? (
+                                            {enrollment.course.thumbnail_path ? (
                                                 <img
-                                                    src={enrollment.course.thumbnail_path || enrollment.course.thumbnail_url}
+                                                    src={`/storage/${enrollment.course.thumbnail_path}`}
+                                                    alt={enrollment.course.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : enrollment.course.thumbnail_url ? (
+                                                <img
+                                                    src={enrollment.course.thumbnail_url}
                                                     alt={enrollment.course.title}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -326,40 +332,40 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
                                         {/* Course Info */}
                                         <div className="p-5">
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 text-xs font-semibold rounded">
+                                                <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs font-semibold rounded">
                                                     {enrollment.course.category?.name || 'General'}
                                                 </span>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                                <span className="text-xs text-gray-500 font-semibold">
                                                     {enrollment.course.progress}% Complete
                                                 </span>
                                             </div>
 
                                             {/* Progress Bar */}
-                                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3">
+                                            <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
                                                 <div
                                                     className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
                                                     style={{ width: `${enrollment.course.progress}%` }}
                                                 ></div>
                                             </div>
 
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
                                                 {enrollment.course.title}
                                             </h3>
 
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                                                 {enrollment.course.description}
                                             </p>
 
-                                            <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                                                 <div className="flex items-center space-x-2">
                                                     <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                                                         {enrollment.course.instructor?.name?.charAt(0) || 'I'}
                                                     </div>
-                                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                                    <span className="text-xs text-gray-600">
                                                         {enrollment.course.instructor?.name || 'Instructor'}
                                                     </span>
                                                 </div>
-                                                <span className="text-xs text-gray-500 dark:text-gray-500">
+                                                <span className="text-xs text-gray-500">
                                                     Enrolled {new Date(enrollment.enrolled_at).toLocaleDateString()}
                                                 </span>
                                             </div>
