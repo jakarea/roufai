@@ -11,7 +11,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EnrollmentRequestResource extends Resource
 {
@@ -105,8 +104,8 @@ class EnrollmentRequestResource extends Resource
                         Forms\Components\Textarea::make('rejection_reason')
                             ->label('Rejection Reason')
                             ->rows(3)
-                            ->visible(function (\Livewire\Forms\Form $form) {
-                                return $form->getState()['status'] === 'rejected';
+                            ->visible(function (callable $get) {
+                                return $get('status') === 'rejected';
                             })
                             ->helperText('Please provide a reason for rejection.'),
                     ])
@@ -192,7 +191,6 @@ class EnrollmentRequestResource extends Resource
                         'bkash' => 'Bkash',
                         'rocket' => 'Rocket',
                     ]),
-                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -201,8 +199,6 @@ class EnrollmentRequestResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -219,16 +215,12 @@ class EnrollmentRequestResource extends Resource
     {
         return [
             'index' => Pages\ListEnrollmentRequests::route('/'),
-            'create' => Pages\CreateEnrollmentRequest::route('/create'),
             'edit' => Pages\EditEnrollmentRequest::route('/{record}/edit'),
         ];
     }
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
+        return parent::getEloquentQuery();
     }
 }

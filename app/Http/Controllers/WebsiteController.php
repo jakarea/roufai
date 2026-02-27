@@ -10,6 +10,7 @@ use App\Models\Enrollment;
 use App\Models\Review;
 use App\Models\BootcampConfig;
 use App\Models\EnrollmentRequest;
+use App\Models\SiteSetting;
 
 class WebsiteController extends Controller
 {
@@ -18,6 +19,9 @@ class WebsiteController extends Controller
      */
     public function index()
     {
+        // Get site settings
+        $siteSettings = SiteSetting::getSettings();
+
         // Get published courses
         $courses = Course::where('is_published', true)
             ->with(['category', 'instructor', 'modules.lessons'])
@@ -44,12 +48,21 @@ class WebsiteController extends Controller
             ->latest()
             ->first();
 
+        // Get top 3 enrolled courses for footer
+        $topCourses = Course::where('is_published', true)
+            ->withCount('enrollments')
+            ->orderBy('enrollments_count', 'desc')
+            ->take(3)
+            ->get();
+
         return view('website.home', compact(
             'featuredCourses',
             'courses',
             'categories',
             'reviews',
-            'bootcampConfig'
+            'bootcampConfig',
+            'siteSettings',
+            'topCourses'
         ));
     }
 
