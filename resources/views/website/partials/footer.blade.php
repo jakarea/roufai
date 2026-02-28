@@ -57,6 +57,8 @@
                     <li><a href="{{ !empty($siteSettings->about_us_url) ? $siteSettings->about_us_url : '#' }}"
                             class="block font-medium text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">আমাদের
                             সম্পর্কে</a></li>
+                    <li><a href="{{ route('terms') }}"
+                            class="block font-medium text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">শর্তাবলী</a></li>
                 </ul>
             </div>
             <!-- card -->

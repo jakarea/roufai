@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'sms' => [
+        'api_url' => env('SMS_API_URL'),
+        'username' => env('SMS_USERNAME'),
+        'password' => env('SMS_PASSWORD'),
+        'sender_id' => env('SMS_SENDER_ID', 'RoufAI'),
+    ],
+
 ];

@@ -1,7 +1,7 @@
 @extends('layouts.website')
 
 @section('title', $course->title . ' - AI কোর্স | আব্দুর রউফ')
-@section('description', Str::limit(strip_tags($course->description), 160) . ' - এই কোর্সে শিখুন ' . $course->title . '। লাইভ ক্লাস, ভিডিও টিউটোরিয়াল এবং প্রজেক্ট সহ কমপ্লিট লার্নিং অভিজ্ঞতা।')
+@section('description', Str::limit(strip_tags($course->short_description ?? $course->description), 160) . ' - এই কোর্সে শিখুন ' . $course->title . '। লাইভ ক্লাস, ভিডিও টিউটোরিয়াল এবং প্রজেক্ট সহ কমপ্লিট লার্নিং অভিজ্ঞতা।')
 @section('keywords', $course->title . ', AI কোর্স, ' . ($course->category->name ?? 'AI ট্রেনিং') . ', ' . str_replace('-', ' ', $course->slug))
 
 @section('content')
@@ -92,9 +92,6 @@
                                                 <h3 class="font-semibold text-[#E2E8F0]">
                                                     {{ $module->title ?? 'মডিউল ' . ($moduleIndex + 1) }}
                                                 </h3>
-                                                @if($module->description)
-                                                <p class="text-sm text-[#ABABAB] mt-2 mb-1 leading-relaxed break-words pr-4">{{ $module->description }}</p>
-                                                @endif
                                             </div>
                                         </div>
                                         <span class="text-sm text-[#ABABAB] bg-white/10 px-3 py-1 rounded-full shrink-0">
@@ -181,7 +178,7 @@
                                                                 @endif
                                                             </h4>
                                                             @if($lesson->description)
-                                                            <p class="text-xs text-[#ABABAB] mt-1 leading-snug break-words line-clamp-2">{{ $lesson->description }}</p>
+                                                            <p class="text-xs text-[#ABABAB] mt-1 leading-snug break-words truncate">{{ \Illuminate\Support\Str::limit($lesson->description, 80) }}</p>
                                                             @endif
                                                         </div>
 
@@ -431,7 +428,7 @@
                             @if($totalLessons > 0)
                             <div class="flex items-center gap-3">
                                 <span>🎥</span>
-                                <span>{{ $totalLessons }}টি ভিডিও</span>
+                                <span>{{ $totalLessons }}টি লেসন</span>
                             </div>
                             @endif
                             <div class="flex items-center gap-3">

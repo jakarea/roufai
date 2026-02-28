@@ -49,6 +49,18 @@
 
                         <form id="free-enroll-form" method="POST" action="{{ route('courses.enroll', $course->id) }}">
                             @csrf
+
+                            <!-- Terms Agreement Checkbox -->
+                            <div class="mb-6">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" id="free-terms-agree" required
+                                        class="mt-1 w-4 h-4 text-[#E850FF] border-gray-300 rounded focus:ring-[#E850FF]">
+                                    <span class="text-sm text-[#ABABAB]">
+                                        আমি <a href="{{ route('terms') }}" target="_blank" class="text-[#E850FF] hover:underline font-medium">শর্তাবলী ও শর্তাবলী</a> পড় পড় পড়ক এবং মেনে নিচ্ছি
+                                    </span>
+                                </label>
+                            </div>
+
                             <button type="submit" id="free-enroll-btn"
                                 class="bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white font-semibold text-lg py-4 px-8 rounded-lg transition-all duration-300">
                                 এনরোল করুন
@@ -151,6 +163,17 @@
                                     required>
                             </div>
 
+                            <!-- Terms Agreement Checkbox -->
+                            <div class="w-full mt-4 lg:col-span-12">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" id="terms-agree" required
+                                        class="mt-1 w-4 h-4 text-[#E850FF] border-gray-300 rounded focus:ring-[#E850FF]">
+                                    <span class="text-sm text-[#ABABAB]">
+                                        আমি <a href="{{ route('terms') }}" target="_blank" class="text-[#E850FF] hover:underline font-medium">শর্তাবলী ও শর্তাবলী</a> পড় পড় পড়ক এবং মেনে নিচ্ছি
+                                    </span>
+                                </label>
+                            </div>
+
                             <div class="w-full flex justify-center lg:col-span-12 lg:justify-end">
                                 <button type="button" id="submit-enrollment-btn"
                                     class="bg-[#E850FF] hover:bg-[#4941C8] text-white font-medium text-base py-2 px-4 mt-5 anim cursor-pointer lg:text-xl lg:py-3.5 lg:px-6 rounded-[10px] transition-all duration-300">
@@ -177,7 +200,6 @@
 
                         <!-- Course Title -->
                         <h3 class="font-bold text-lg text-[#E2E8F0] mb-3">{{ $course->title }}</h3>
-
                         <!-- Price -->
                         <div class="mb-4">
                             @if($course->type === 'FREE')

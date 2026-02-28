@@ -6,6 +6,7 @@ use App\Filament\Instructor\Pages\InstructorProfile;
 use App\Filament\Instructor\Widgets;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
+use Illuminate\Support\Facades\Auth;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
