@@ -50,7 +50,7 @@
                 @if($totalVideos > 0)
                 <li>
                     <span class="text-xs font-normal text-[#ababab] block">
-                        🎥 {{ $totalVideos }}টি ভিডিও
+                        🎥 {{ $totalVideos }}টি লেসন
                     </span>
                 </li>
                 @endif
@@ -67,19 +67,7 @@
                         📁 {{ $course->modules->count() }}টি মডিউল
                     </span>
                 </li>
-                @endif
-                @if($totalVideos > 0 || ($course->modules && $course->modules->count() > 0))
-                <li>
-                    <span class="text-xs font-normal text-[#ababab] block">
-                        |
-                    </span>
-                </li>
-                @endif
-                <li>
-                    <span class="text-xs font-normal text-[#ababab] block">
-                        ⏰ লাইফটাইম এক্সেস
-                    </span>
-                </li>
+                @endif 
             </ul>
             </p>
 

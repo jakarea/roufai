@@ -55,11 +55,19 @@ class CourseResource extends Resource
                             ])
                             ->required()
                             ->default('FREE')
+                            ->live()
+                            ->columnSpan(1),
+                        Forms\Components\TextInput::make('price')
+                            ->label('Price (BDT)')
+                            ->numeric()
+                            ->prefix('৳')
+                            ->visible(fn (callable $get) => $get('type') === 'PAID')
+                            ->required(fn (callable $get) => $get('type') === 'PAID')
                             ->columnSpan(1),
                         Forms\Components\TextInput::make('title')
                             ->required()
                             ->maxLength(255)
-                            ->live()
+                            ->live(true)
                             ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Str::slug($state)))
                             ->columnSpan(2),
                         Forms\Components\TextInput::make('slug')
@@ -67,17 +75,33 @@ class CourseResource extends Resource
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->columnSpan(2),
-                        Forms\Components\Textarea::make('description')
-                            ->required()
-                            ->rows(4)
+                        Forms\Components\Textarea::make('short_description')
+                            ->label('Short Description')
+                            ->helperText('Brief summary for course cards (recommended: 150-200 characters)')
+                            ->rows(3)
+                            ->maxLength(500)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('price')
-                            ->label('Price (BDT)')
-                            ->numeric()
-                            ->prefix('৳')
-                            ->visible(fn (callable $get) => $get('type') === 'PAID')
-                            ->required(fn (callable $get) => $get('type') === 'PAID')
-                            ->columnSpan(2),
+                        Forms\Components\RichEditor::make('description')
+                            ->label('Course Description')
+                            ->helperText('Full detailed description with rich formatting')
+                            ->required()
+                            ->columnSpanFull()
+                            ->toolbarButtons([
+                                'attachFiles',
+                                'blockquote',
+                                'bold',
+                                'bulletList',
+                                'codeBlock',
+                                'h2',
+                                'h3',
+                                'italic',
+                                'link',
+                                'media',
+                                'numberedList',
+                                'redo',
+                                'strike',
+                                'undo',
+                            ]),
                         Forms\Components\FileUpload::make('thumbnail_path')
                             ->label('Course Thumbnail')
                             ->image()

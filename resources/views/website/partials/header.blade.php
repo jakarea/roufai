@@ -47,7 +47,7 @@
 
                     @auth
                         @if(auth()->user()->role === 'instructor')
-                            <a href="{{ route('instructor.dashboard') }}" class="hidden md:block font-normal text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">
+                            <a href="{{ url('/instructor') }}" class="hidden md:block font-normal text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">
                                 প্রশিক্ষক প্যানেল
                             </a>
                         @elseif(auth()->user()->role === 'student')
@@ -55,14 +55,19 @@
                                 ড্যাশবোর্ড
                             </a>
                         @elseif(auth()->user()->role === 'admin')
-                            <a href="{{ route('admin.dashboard') }}" class="hidden md:block font-normal text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">
+                            <a href="{{ url('/admin') }}" class="hidden md:block font-normal text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">
                                 অ্যাডমিন প্যানেল
                             </a>
                         @endif
                     @else
-                        <a href="{{ route('login') }}" class="hidden md:inline-flex font-golos justify-center items-center bg-submit rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-2 anim hover:!bg-lime px-3 lg:text-base hover:text-primary group border border-[#9F93A7]/70">
-                            লগইন করুন
-                        </a>
+                        <div class="hidden md:flex items-center gap-3">
+                            <a href="{{ route('login') }}" class="font-normal text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">
+                                লগইন
+                            </a>
+                            <a href="{{ route('register') }}" class="inline-flex font-golos justify-center items-center bg-submit rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-2 anim hover:!bg-lime px-3 lg:text-base hover:text-primary group border border-[#9F93A7]/70">
+                                রেজিস্টার
+                            </a>
+                        </div>
                     @endauth
 
                     {{-- Mobile Menu Toggle --}}
@@ -101,7 +106,7 @@
                         @auth
                             @if(auth()->user()->role === 'instructor')
                                 <li class="pt-2 border-t border-white/10">
-                                    <a href="{{ route('instructor.dashboard') }}" class="block font-normal text-base text-[#E850FF] anim hover:text-[#fff]">
+                                    <a href="{{ url('/instructor') }}" class="block font-normal text-base text-[#E850FF] anim hover:text-[#fff]">
                                         প্রশিক্ষক প্যানেল
                                     </a>
                                 </li>
@@ -113,15 +118,18 @@
                                 </li>
                             @elseif(auth()->user()->role === 'admin')
                                 <li class="pt-2 border-t border-white/10">
-                                    <a href="{{ route('admin.dashboard') }}" class="block font-normal text-base text-[#E850FF] anim hover:text-[#fff]">
+                                    <a href="{{ url('/admin') }}" class="block font-normal text-base text-[#E850FF] anim hover:text-[#fff]">
                                         অ্যাডমিন প্যানেল
                                     </a>
                                 </li>
                             @endif
                         @else
-                            <li class="pt-2 border-t border-white/10">
-                                <a href="{{ route('login') }}" class="inline-flex items-center justify-center w-full bg-submit rounded-md p-2 font-medium text-sm text-[#fff] gap-x-2 anim hover:!bg-lime">
-                                    লগইন করুন
+                            <li class="pt-2 border-t border-white/10 flex gap-3">
+                                <a href="{{ route('login') }}" class="flex-1 inline-flex items-center justify-center bg-[#fff]/10 rounded-md p-2 font-medium text-sm text-[#ABABAB] anim hover:text-[#fff]">
+                                    লগইন
+                                </a>
+                                <a href="{{ route('register') }}" class="flex-1 inline-flex items-center justify-center bg-submit rounded-md p-2 font-medium text-sm text-[#fff] gap-x-2 anim hover:!bg-lime">
+                                    রেজিস্টার
                                 </a>
                             </li>
                         @endauth

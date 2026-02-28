@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('topic');
             $table->text('description')->nullable();
             $table->string('meeting_link');
-            $table->dateTime('start_datetime');
+            $table->date('start_date');
+            $table->time('start_time');
             $table->unsignedInteger('duration_minutes')->comment('Duration in minutes');
             $table->string('thumbnail_path')->nullable();
             $table->enum('status', ['scheduled', 'ongoing', 'completed', 'canceled'])->default('scheduled');
@@ -26,7 +27,7 @@ return new class extends Migration
 
             $table->index('instructor_id');
             $table->index('course_id');
-            $table->index('start_datetime');
+            $table->index('start_date');
             $table->index('status');
         });
     }

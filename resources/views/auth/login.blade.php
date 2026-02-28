@@ -6,16 +6,14 @@
     <title>Login - Rouf AI Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 </head>
 <body class="bg-gradient-to-br from-purple-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
     <div class="max-w-md w-full">
         <!-- Logo and Title -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 mb-4">
-                <i class="fas fa-graduation-cap text-white text-3xl"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-900">Rouf AI Academy</h1>
-            <p class="text-gray-600 mt-2">Sign in to your account</p>
+            <img src="{{ asset('website-images/logo.webp') }}" alt="Rouf AI Academy Logo" class="mx-auto h-16 w-auto mb-4">
+            <p class="text-gray-600">Sign in to your account</p>
         </div>
 
         <!-- Login Form Card -->
@@ -71,7 +69,7 @@
                     @enderror
                 </div>
 
-                <!-- Remember Me -->
+                <!-- Remember Me & Forgot Password -->
                 <div class="mb-6 flex items-center justify-between">
                     <label class="flex items-center">
                         <input
@@ -81,6 +79,10 @@
                         >
                         <span class="ml-2 text-sm text-gray-600">Remember me</span>
                     </label>
+
+                    <a href="{{ route('password.request') }}" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                        Forgot Password?
+                    </a>
                 </div>
 
                 <!-- Submit Button -->
@@ -95,9 +97,19 @@
  
         </div>
 
+        <!-- Register Link -->
+        <div class="text-center mt-6">
+            <p class="text-sm text-gray-600">
+                Don't have an account?
+                <a href="{{ route('register') }}" class="text-purple-600 hover:text-purple-700 font-semibold">
+                    Create Student Account
+                </a>
+            </p>
+        </div>
+
         <!-- Footer -->
-        <div class="text-center mt-6 text-sm text-gray-600">
-            <p>&copy; 2026 Rouf AI Academy. All rights reserved.</p>
+        <div class="text-center mt-4 text-sm text-gray-600">
+            <p>&copy; {{ date('Y') }} Rouf AI Academy. All rights reserved.</p>
         </div>
     </div>
 </body>

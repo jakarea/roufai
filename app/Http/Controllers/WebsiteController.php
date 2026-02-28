@@ -11,6 +11,12 @@ use App\Models\Review;
 use App\Models\BootcampConfig;
 use App\Models\EnrollmentRequest;
 use App\Models\SiteSetting;
+use App\Models\HeroSlide;
+use App\Models\FAQ;
+use App\Mail\EnrollmentSuccessMail;
+use App\Mail\EnrollmentRequestMail;
+use App\Services\SMSService;
+use Illuminate\Support\Facades\Mail;
 
 class WebsiteController extends Controller
 {
@@ -21,6 +27,16 @@ class WebsiteController extends Controller
     {
         // Get site settings
         $siteSettings = SiteSetting::getSettings();
+
+        // Get active hero slides
+        $heroSlides = HeroSlide::active()
+            ->ordered()
+            ->get();
+
+        // Get active FAQs
+        $faqs = FAQ::active()
+            ->ordered()
+            ->get();
 
         // Get published courses
         $courses = Course::where('is_published', true)
@@ -56,6 +72,8 @@ class WebsiteController extends Controller
             ->get();
 
         return view('website.home', compact(
+            'heroSlides',
+            'faqs',
             'featuredCourses',
             'courses',
             'categories',
@@ -325,6 +343,28 @@ class WebsiteController extends Controller
                 'enrolled_at' => now(),
             ]);
 
+            // Send enrollment success email
+            Mail::to($user->email)->send(new EnrollmentSuccessMail($user, $course));
+
+            // Send enrollment confirmation SMS
+            if ($user->phone) {
+                try {
+                    $smsService = new SMSService();
+                    $smsService->sendEnrollmentConfirmation(
+                        $user->phone,
+                        $user->name,
+                        $course->title
+                    );
+                } catch (\Exception $e) {
+                    // Log SMS error but don't fail the enrollment
+                    \Log::error('SMS sending failed for free course enrollment', [
+                        'error' => $e->getMessage(),
+                        'user_id' => $user->id,
+                        'course_id' => $course->id
+                    ]);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'সফলভাবে কোর্সে এনরোল হয়েছে!',
@@ -341,7 +381,7 @@ class WebsiteController extends Controller
         ]);
 
         // Create enrollment request for paid courses
-        EnrollmentRequest::create([
+        $enrollmentRequest = EnrollmentRequest::create([
             'user_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -353,6 +393,38 @@ class WebsiteController extends Controller
             'amount_paid' => $validated['paid_amount'],
             'status' => 'pending',
         ]);
+
+        // Send email to admin about the enrollment request
+        Mail::send(new EnrollmentRequestMail($enrollmentRequest, $course));
+
+        // Send SMS notification to student about enrollment request received
+        if ($validated['payment_number']) {
+            try {
+                $smsService = new SMSService();
+                $message = $smsService->sendEnrollmentRequestReceived(
+                    $validated['payment_number'],
+                    $user->name,
+                    $course->title,
+                    $validated['paid_amount']
+                );
+
+                // Replace {transaction_id} placeholder with actual transaction ID
+                if ($message['success']) {
+                    $finalMessage = str_replace(
+                        '{transaction_id}',
+                        $validated['transaction_id'],
+                        $message
+                    );
+                }
+            } catch (\Exception $e) {
+                // Log SMS error but don't fail the enrollment request
+                \Log::error('SMS sending failed for paid course enrollment request', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->id,
+                    'course_id' => $course->id
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -403,6 +475,26 @@ class WebsiteController extends Controller
             'amount_paid' => $validated['paid_amount'],
             'status' => 'pending',
         ]);
+
+        // Send SMS notification to student about bootcamp enrollment request received
+        if ($validated['payment_number']) {
+            try {
+                $smsService = new SMSService();
+                $smsService->sendEnrollmentRequestReceived(
+                    $validated['payment_number'],
+                    $validated['name'],
+                    'Bootcamp Course',
+                    $validated['paid_amount']
+                );
+            } catch (\Exception $e) {
+                // Log SMS error but don't fail the enrollment request
+                \Log::error('SMS sending failed for bootcamp enrollment request', [
+                    'error' => $e->getMessage(),
+                    'email' => $validated['email'],
+                    'course_id' => $courseId
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -478,5 +570,26 @@ class WebsiteController extends Controller
             'siteSettings' => $siteSettings,
             'topCourses' => $topCourses
         ]);
+    }
+
+    /**
+     * Display terms of service page.
+     */
+    public function terms()
+    {
+        // Get site settings for footer
+        $siteSettings = SiteSetting::getSettings();
+
+        // Get top 3 enrolled courses for footer
+        $topCourses = Course::where('is_published', true)
+            ->withCount('enrollments')
+            ->orderBy('enrollments_count', 'desc')
+            ->take(3)
+            ->get();
+
+        return view('website.terms', compact(
+            'siteSettings',
+            'topCourses'
+        ));
     }
 }

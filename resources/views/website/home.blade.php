@@ -20,10 +20,11 @@
     <!-- Hero Slider -->
     <div class="hero-slider relative w-full h-full">
 
-        <!-- Slide 1 -->
-        <div class="hero-slide active absolute inset-0 w-full h-full" style="opacity: 1; z-index: 10;">
+        @foreach($heroSlides as $index => $slide)
+        <!-- Slide {{ $index + 1 }} -->
+        <div class="hero-slide {{ $index === 0 ? 'active' : '' }} absolute inset-0 w-full h-full" style="opacity: {{ $index === 0 ? '1' : '0' }}; z-index: {{ $index === 0 ? '10' : '0' }};">
             <div class="absolute inset-0 w-full h-full">
-                <img src="{{ asset('website-images/hero-1.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
+                <img src="{{ asset('website-images/' . $slide->background_image) }}" alt="{{ $slide->title }}" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-[#000]/50"></div>
                 <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
             </div>
@@ -31,66 +32,19 @@
                 <div class="max-w-2xl py-20 md:py-28 lg:py-32">
                     <h1
                         class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
-                        ইন্ডাস্ট্রি এক্সপার্টদের গাইডলাইনে নিজেকে দক্ষ করে তুলুন
+                        {{ $slide->title }}
                     </h1>
                     <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
-                        শুধু ভিডিও টিউটোরিয়াল নয়, পাচ্ছেন সরাসরি মেন্টরের সাপোর্ট এবং রিয়েল লাইফ প্রজেক্টের অভিজ্ঞতা।
+                        {{ $slide->description }}
                     </p>
-                    <a href="{{ route('courses') }}"
+                    <a href="{{ $slide->button_url ?: route('courses') }}"
                         class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
-                        এখনই ভর্তি হোন
+                        {{ $slide->button_text }}
                     </a>
                 </div>
             </div>
         </div>
-
-        <!-- Slide 2 -->
-        <div class="hero-slide absolute inset-0 w-full h-full" style="opacity: 0; z-index: 0;">
-            <div class="absolute inset-0 w-full h-full">
-                <img src="{{ asset('website-images/hero-2.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-[#000]/50"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
-            </div>
-            <div class="container-x relative h-full flex items-center">
-                <div class="max-w-2xl py-20 md:py-28 lg:py-32">
-                    <h1
-                        class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
-                        AI - এর শক্তিতে গড়ুন আগামীর ক্যারিয়ার
-                    </h1>
-                    <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
-                        সাধারণ দক্ষতা দিয়ে আর নয়, নিজেকে আপডেট করুন ফিউচার টেকনোলজির সাথে। আজই শুরু হোক আপনার AI জার্নি।
-                    </p>
-                    <a href="{{ route('courses') }}"
-                        class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
-                        ফ্রি ক্লাস করুন
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slide 3 -->
-        <div class="hero-slide absolute inset-0 w-full h-full" style="opacity: 0; z-index: 0;">
-            <div class="absolute inset-0 w-full h-full">
-                <img src="{{ asset('website-images/hero-3.webp') }}" alt="Hero Image" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-[#000]/50"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
-            </div>
-            <div class="container-x relative h-full flex items-center">
-                <div class="max-w-2xl py-20 md:py-28 lg:py-32">
-                    <h1
-                        class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
-                        সঠিক সময়ে, সুবর্ণ সুযোগে - স্কিল ডেভেলপ হবে যেকোনো জায়গা থেকে।
-                    </h1>
-                    <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
-                        পিসি বা ল্যাপটপে, ঘরে কিংবা বাইরে - স্মার্ট লার্নিং একটি প্ল্যাটফর্মে।
-                    </p>
-                    <a href="{{ route('courses') }}"
-                        class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
-                        ফ্রি ক্লাস করুন
-                    </a>
-                </div>
-            </div>
-        </div>
+        @endforeach
 
         <!-- Slider Controls -->
         <div class="absolute bottom-8 left-0 right-0 z-50">
@@ -293,124 +247,20 @@
         <!-- common title end -->
 
         <div class="w-full grid grid-cols-1 gap-y-1 lg:gap-y-4">
-            <!-- card -->
+            @foreach($faqs as $index => $faq)
             <div
-                class="faq-item item bg-submit rounded-[10px] p-2.5 grid grid-cols-12 items-center lg:items-start gap-x-2.5 md:p-3.5 lg:p-5 border border-[#49484E] faq-card-glow active"
+                class="faq-item item bg-submit rounded-[10px] p-2.5 grid grid-cols-12 items-center lg:items-start gap-x-2.5 md:p-3.5 lg:p-5 border border-[#49484E] {{ $index % 2 === 0 ? 'faq-card-glow' : 'faq-card-glow faq-card-glow-variant' }} {{ $index === 0 ? 'active' : '' }}"
                 onclick="toggleFAQ(this)">
                 <div class="w-full col-span-10">
-                    <h5 class="text-[#E2E8F0] font-medium text-lg md:text-xl lg:text-2xl lg:pl-5">এই কোর্সে যোগ দেওয়ার
-                        জন্য কি কোনো
-                        বিশেষ যোগ্যতার প্রয়োজন আছে?</h5>
+                    <h5 class="text-[#E2E8F0] font-medium text-lg md:text-xl lg:text-2xl lg:pl-5">{{ $faq->question }}</h5>
 
-                    <p class="faq-answer text-sm text-secondary-200 lg:text-base active">আমি একজন ডিজাইনার। আগে
-                        ডিজাইন করতে ঘন্টার পর ঘন্টা
-                        লাগত, কিন্তু এআই শেখার পর কাজ অনেক সহজ হয়েছে। কালার প্যালেট, লেআউট আর ভিজ্যুয়াল তৈরিতে এখন
-                        আর ঝামেলা
-                        নেই। প্রতিদিনের কাজের গতি বেড়েছে এবং মানও উন্নত হয়েছে। আমার ক্লায়েন্টরা এখন আগের চেয়ে
-                        অনেক বেশি
-                        সন্তুষ্ট।</p>
+                    <p class="faq-answer text-sm text-secondary-200 lg:text-base {{ $index === 0 ? 'active' : '' }}">{{ $faq->answer }}</p>
                 </div>
                 <button type="button" class="col-span-2 flex justify-end cursor-pointer">
-                    <img src="{{ asset('website-images/icons/angle-down-circle.svg') }}" alt="angle 1" class="w-5 lg:w-[26px] faq-icon">
+                    <img src="{{ asset('website-images/icons/angle-down-circle.svg') }}" alt="angle" class="w-5 lg:w-[26px] faq-icon">
                 </button>
             </div>
-            <!-- card -->
-            <!-- card -->
-            <div
-                class="faq-item item bg-submit rounded-[10px] p-2.5 grid grid-cols-12 items-center lg:items-start gap-x-2.5 md:p-3.5 lg:p-5 border border-[#49484E] faq-card-glow faq-card-glow-variant"
-                onclick="toggleFAQ(this)">
-                <div class="w-full col-span-10">
-                    <h5 class="text-[#E2E8F0] font-medium text-lg md:text-xl lg:text-2xl lg:pl-5">কোর্সের সময়কাল কতদিন এবং
-                        কীভাবে
-                        ক্লাসগুলো পরিচালিত হয়?</h5>
-
-                    <p class="faq-answer text-sm text-secondary-200 lg:text-base">এই কোর্সটি ৩ দিনের জন্য ডিজাইন
-                        করা হয়েছে। প্রতিদিন ২-৩ ঘন্টা করে লাইভ ক্লাস থাকবে। ক্লাসগুলো জুম প্ল্যাটফর্মে অনুষ্ঠিত হবে
-                        এবং সব ক্লাসের রেকর্ডিং পাবেন যাতে পরে আবার দেখতে পারেন।
-                    </p>
-                </div>
-                <button type="button" class="col-span-2 flex justify-end cursor-pointer">
-                    <img src="{{ asset('website-images/icons/angle-down-circle.svg') }}" alt="angle 1" class="w-5 lg:w-[26px] faq-icon">
-                </button>
-            </div>
-            <!-- card -->
-            <!-- card -->
-            <div
-                class="faq-item item bg-submit rounded-[10px] p-2.5 grid grid-cols-12 items-center lg:items-start gap-x-2.5 md:p-3.5 lg:p-5 border border-[#49484E] faq-card-glow"
-                onclick="toggleFAQ(this)">
-                <div class="w-full col-span-10">
-                    <h5 class="text-[#E2E8F0] font-medium text-lg md:text-xl lg:text-2xl lg:pl-5">কোর্স  কি কোনো
-                        লুকানো চার্জ
-                        আছে?</h5>
-
-                    <p class="faq-answer text-sm text-secondary-200 lg:text-base">কোনো
-                        লুকানো চার্জ নেই। একবার পেমেন্ট করলেই সমস্ত কন্টেন্ট, লাইভ ক্লাস, রেকর্ডেড ক্লাস, এবং
-                        সাপোর্ট পাবেন। তাছাড়া বিকাশ, নগদ পেমেন্ট সুবিধাও পাবেন।
-                    </p>
-                </div>
-                <button type="button" class="col-span-2 flex justify-end cursor-pointer">
-                    <img src="{{ asset('website-images/icons/angle-down-circle.svg') }}" alt="angle 1" class="w-5 lg:w-[26px] faq-icon">
-                </button>
-            </div>
-            <!-- card -->
-            <!-- card -->
-            <div
-                class="faq-item item bg-submit rounded-[10px] p-2.5 grid grid-cols-12 items-center lg:items-start gap-x-2.5 md:p-3.5 lg:p-5 border border-[#49484E] faq-card-glow faq-card-glow-variant"
-                onclick="toggleFAQ(this)">
-                <div class="w-full col-span-10">
-                    <h5 class="text-[#E2E8F0] font-medium text-lg md:text-xl lg:text-2xl lg:pl-5">কোর্স শেষ করার পর কি কোনো
-                        সার্টিফিকেট
-                        পাওয়া যাবে?</h5>
-
-                    <p class="faq-answer text-sm text-secondary-200 lg:text-base">হ্যাঁ, কোর্স সম্পন্ন করার পর
-                        আপনার একটি ভেরিফাইড সার্টিফিকেট পাবেন যা আপনার LinkedIn এ শেয়ার করতে পারবেন অথবা চাকরির
-                        ইন্টারভিউতে দেখাতে পারবেন। তাছাড়া প্রজেক্ট পোর্টফোলিও পাবেন।
-                    </p>
-                </div>
-                <button type="button" class="col-span-2 flex justify-end cursor-pointer">
-                    <img src="{{ asset('website-images/icons/angle-down-circle.svg') }}" alt="angle 1" class="w-5 lg:w-[26px] faq-icon">
-                </button>
-            </div>
-            <!-- card -->
-            <!-- card -->
-            <div
-                class="faq-item item bg-submit rounded-[10px] p-2.5 grid grid-cols-12 items-center lg:items-start gap-x-2.5 md:p-3.5 lg:p-5 border border-[#49484E] faq-card-glow"
-                onclick="toggleFAQ(this)">
-                <div class="w-full col-span-10">
-                    <h5 class="text-[#E2E8F0] font-medium text-lg md:text-xl lg:text-2xl lg:pl-5">আমি যদি একেবারে নতুন হই,
-                        তাহলে কি
-                        কোর্সটি বুঝতে পারব?</h5>
-
-                    <p class="faq-answer text-sm text-secondary-200 lg:text-base">বিলকুল! এই কোর্সটি সম্পূর্ণভাবে
-                        বিগিনার-ফ্রেন্ডলি। আমরা সমস্ত টুলস এবং প্রক্রিয়া শূন্য থেকে শেখাবো। কোনো পূর্ব অভিজ্ঞতার
-                        প্রয়োজন নেই। প্রতিটি লেসন স্টেপ-বাই-স্টেপ সহজ ভাষায় করা হয়েছে।
-                    </p>
-                </div>
-                <button type="button" class="col-span-2 flex justify-end cursor-pointer">
-                    <img src="{{ asset('website-images/icons/angle-down-circle.svg') }}" alt="angle 1" class="w-5 lg:w-[26px] faq-icon">
-                </button>
-            </div>
-            <!-- card -->
-            <!-- card -->
-            <div
-                class="faq-item item bg-submit rounded-[10px] p-2.5 grid grid-cols-12 items-center lg:items-start gap-x-2.5 md:p-3.5 lg:p-5 border border-[#49484E] faq-card-glow faq-card-glow-variant"
-                onclick="toggleFAQ(this)">
-                <div class="w-full col-span-10">
-                    <h5 class="text-[#E2E8F0] font-medium text-lg md:text-xl lg:text-2xl lg:pl-5">কোর্স শেষে আমি বাস্তবে কী
-                        কী কাজে
-                        লাগাতে পারব?</h5>
-
-                    <p class="faq-answer text-sm text-secondary-200 lg:text-base">এই কোর্স শেষে আপনি প্রফেশনাল
-                        মানের বিজ্ঞাপন, সোশ্যাল মিডিয়া কন্টেন্ট, প্রডাক্ট ভিজুয়াল, ভিডিও তৈরি, মিউজিক এবং ভয়েসওভার
-                        তৈরি করতে পারবেন। ফ্রিল্যান্সার হিসেবে কাজ করতে পারবেন অথবা নিজের বিজনেসের জন্য ব্যবহার করতে
-                        পারবেন।
-                    </p>
-                </div>
-                <button type="button" class="col-span-2 flex justify-end cursor-pointer">
-                    <img src="{{ asset('website-images/icons/angle-down-circle.svg') }}" alt="angle 1" class="w-5 lg:w-[26px] faq-icon">
-                </button>
-            </div>
-            <!-- card -->
+            @endforeach
         </div>
     </div>
 </section>
