@@ -25,17 +25,19 @@ class CertificateController extends Controller
 
         $course = Course::with(['instructor', 'category', 'modules.lessons'])->findOrFail($courseId);
 
+        // Get all lesson IDs from this course
+        $courseLessonIds = $course->modules->flatMap(function ($module) {
+            return $module->lessons->pluck('id');
+        })->toArray();
+
         // Get all completed lessons for this student in this course
         $completedLessons = \App\Models\LessonCompletion::where('user_id', $student->id)
-            ->where('course_id', $courseId)
+            ->whereIn('lesson_id', $courseLessonIds)
             ->pluck('lesson_id')
             ->toArray();
 
         // Calculate total lessons
-        $totalLessons = 0;
-        foreach ($course->modules as $module) {
-            $totalLessons += $module->lessons()->count();
-        }
+        $totalLessons = count($courseLessonIds);
 
         // Check if course is completed
         if (count($completedLessons) !== $totalLessons || $totalLessons === 0) {

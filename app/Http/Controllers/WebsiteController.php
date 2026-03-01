@@ -401,21 +401,13 @@ class WebsiteController extends Controller
         if ($validated['payment_number']) {
             try {
                 $smsService = new SMSService();
-                $message = $smsService->sendEnrollmentRequestReceived(
+                $smsService->sendEnrollmentRequestReceived(
                     $validated['payment_number'],
                     $user->name,
                     $course->title,
-                    $validated['paid_amount']
+                    $validated['paid_amount'],
+                    $validated['transaction_id']
                 );
-
-                // Replace {transaction_id} placeholder with actual transaction ID
-                if ($message['success']) {
-                    $finalMessage = str_replace(
-                        '{transaction_id}',
-                        $validated['transaction_id'],
-                        $message
-                    );
-                }
             } catch (\Exception $e) {
                 // Log SMS error but don't fail the enrollment request
                 \Log::error('SMS sending failed for paid course enrollment request', [
@@ -484,7 +476,8 @@ class WebsiteController extends Controller
                     $validated['payment_number'],
                     $validated['name'],
                     'Bootcamp Course',
-                    $validated['paid_amount']
+                    $validated['paid_amount'],
+                    $validated['transaction_id']
                 );
             } catch (\Exception $e) {
                 // Log SMS error but don't fail the enrollment request

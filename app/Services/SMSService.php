@@ -139,14 +139,15 @@ class SMSService
      * @param string $studentName
      * @param string $courseTitle
      * @param int $amountPaid
+     * @param string $transactionId
      * @return array
      */
-    public function sendEnrollmentRequestReceived(string $phoneNumber, string $studentName, string $courseTitle, int $amountPaid): array
+    public function sendEnrollmentRequestReceived(string $phoneNumber, string $studentName, string $courseTitle, int $amountPaid, string $transactionId): array
     {
         $message = "Dear {$studentName},\n\n";
         $message .= "We have received your enrollment request for '{$courseTitle}'.\n\n";
         $message .= "Amount Paid: ৳{$amountPaid}\n";
-        $message .= "Transaction ID: {transaction_id}\n\n";
+        $message .= "Transaction ID: {$transactionId}\n\n";
         $message .= "Your request is being reviewed. You will receive another SMS once approved.\n\n";
         $message .= "Thank you for choosing Rouf AI Academy!";
 

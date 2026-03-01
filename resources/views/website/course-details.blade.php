@@ -40,7 +40,7 @@
                     @if($course->category)
                     <span class="bg-white/10 px-3 py-1 rounded-full">{{ $course->category->name }}</span>
                     @endif
-                    <span>⭐ {{ number_format($avgRating, 1) }} ({{ $course->reviews->count() }} রিভিউ)</span>
+                    <span>⭐ {{ number_format($avgRating, 1) }} ({{ $course->reviews->where('status', 'approved')->count() }} রিভিউ)</span>
                     <span>👥 {{ $course->enrollments_count }} শিক্ষার্থী</span>
                 </div>
 
@@ -324,9 +324,9 @@
                     @endif
 
                     <!-- Existing Reviews -->
-                    @if($course->reviews && $course->reviews->count() > 0)
+                    @if($course->reviews && $course->reviews->where('status', 'approved')->count() > 0)
                     <div class="space-y-4">
-                        @foreach($course->reviews->take(5) as $review)
+                        @foreach($course->reviews->where('status', 'approved')->take(5) as $review)
                         <div class="bg-white/5 border border-white/10 rounded-lg p-4">
                             <div class="flex items-center gap-3 mb-3">
                                 @if($review->user && $review->user->avatar)

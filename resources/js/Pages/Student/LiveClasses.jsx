@@ -78,10 +78,10 @@ export default function LiveClasses({ auth, liveClasses }) {
                         Upcoming
                     </span>
                 );
-            case 'completed':
+            case 'expired':
                 return (
-                    <span className="px-3 py-1 bg-gray-500 text-white text-xs font-semibold rounded-full">
-                        Completed
+                    <span className="px-3 py-1 bg-gray-400 text-gray-700 text-xs font-semibold rounded-full">
+                        Expired
                     </span>
                 );
             default:
@@ -119,7 +119,7 @@ export default function LiveClasses({ auth, liveClasses }) {
                                         ? 'border-red-300'
                                         : liveClass.status === 'scheduled'
                                         ? 'border-blue-300'
-                                        : 'border-gray-300'
+                                        : 'border-gray-400'
                                 }`}
                             >
                                 <div className="p-6">
@@ -215,7 +215,7 @@ export default function LiveClasses({ auth, liveClasses }) {
                                                 </div>
                                             )}
 
-                                            {liveClass.status !== 'completed' && (
+                                            {liveClass.status !== 'expired' && (
                                                 <a
                                                     href={liveClass.meeting_link}
                                                     target="_blank"

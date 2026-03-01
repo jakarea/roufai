@@ -35,6 +35,11 @@
             <a href="{{ route('courses.overview', $course->slug) }}"
                 class="font-semibold text-sm lg:text-lg leading-[140%] text-[#E2E8F0] mb-2 lg:mb-2.5 block">
                 {{ $course->title }}</a>
+            @if($course->short_description)
+            <p class="text-xs font-normal text-[#ababab] mb-2 lg:mb-2.5 truncate">
+                {{ $course->short_description }}
+            </p>
+            @endif
             <p class="text-xs font-normal text-[#ababab]">
             <ul class="flex items-center gap-x-2 mt-2 lg:mt-2.5">
                 @php

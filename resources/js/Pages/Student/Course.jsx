@@ -149,9 +149,11 @@ export default function Course({ auth, course, completedLessons, userReview }) {
                                 {course.title}
                             </h1>
 
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                {course.description}
-                            </p>
+                            {course.short_description && (
+                                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                    {course.short_description}
+                                </p>
+                            )}
 
                             <div className="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
                                 <div className="flex items-center space-x-2">
@@ -344,7 +346,7 @@ export default function Course({ auth, course, completedLessons, userReview }) {
                                         <div className="p-4 bg-gray-50 dark:bg-gray-900">
                                             <h3 className="font-semibold text-gray-900 dark:text-white">{module.title}</h3>
                                             {module.description && (
-                                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{module.description}</p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">{module.description}</p>
                                             )}
                                         </div>
 

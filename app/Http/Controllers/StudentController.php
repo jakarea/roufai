@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Enrollment;
 use App\Models\LessonCompletion;
 use App\Models\Review;
@@ -124,6 +125,7 @@ class StudentController extends Controller
                     'course' => [
                         'id' => $enrollment->course->id,
                         'title' => $enrollment->course->title,
+                        'short_description' => $enrollment->course->short_description,
                         'description' => $enrollment->course->description,
                         'thumbnail_url' => $enrollment->course->thumbnail_url,
                         'thumbnail_path' => $enrollment->course->thumbnail_path,
@@ -193,9 +195,14 @@ class StudentController extends Controller
             ->where('status', 'approved')
             ->count();
 
-        // Get completed lessons for this student
+        // Get all lesson IDs from this course
+        $courseLessonIds = $course->modules->flatMap(function ($module) {
+            return $module->lessons->pluck('id');
+        })->toArray();
+
+        // Get completed lessons for this student from this course
         $completedLessons = LessonCompletion::where('user_id', $student->id)
-            ->where('course_id', $id)
+            ->whereIn('lesson_id', $courseLessonIds)
             ->pluck('lesson_id')
             ->toArray();
 
@@ -208,6 +215,7 @@ class StudentController extends Controller
             'course' => [
                 'id' => $course->id,
                 'title' => $course->title,
+                'short_description' => $course->short_description,
                 'description' => $course->description,
                 'thumbnail_url' => $course->thumbnail_url,
                 'type' => $course->type,
@@ -310,12 +318,17 @@ class StudentController extends Controller
             }
 
             if ($totalLessons > 0 && $completedCount === $totalLessons) {
+                // Get all lesson IDs from this course
+                $courseLessonIds = $enrollment->course->modules->flatMap(function ($module) {
+                    return $module->lessons->pluck('id');
+                })->toArray();
+
                 $completedCourses[] = [
                     'id' => $enrollment->course->id,
                     'title' => $enrollment->course->title,
+                    'short_description' => $enrollment->course->short_description,
                     'description' => $enrollment->course->description,
                     'thumbnail_url' => $enrollment->course->thumbnail_url,
-                    'thumbnail_path' => $enrollment->course->thumbnail_path,
                     'type' => $enrollment->course->type,
                     'price' => $enrollment->course->price,
                     'category' => [
@@ -327,7 +340,7 @@ class StudentController extends Controller
                         'name' => $enrollment->course->instructor->name ?? 'N/A',
                     ],
                     'completed_at' => LessonCompletion::where('user_id', $student->id)
-                        ->where('course_id', $enrollment->course->id)
+                        ->whereIn('lesson_id', $courseLessonIds)
                         ->latest('completed_at')
                         ->first()
                         ?->completed_at,
@@ -366,7 +379,6 @@ class StudentController extends Controller
                 [
                     'user_id' => $student->id,
                     'lesson_id' => $request->lesson_id,
-                    'course_id' => $request->course_id,
                 ],
                 [
                     'completed_at' => now(),
@@ -424,10 +436,9 @@ class StudentController extends Controller
                 ->first();
 
             if ($existingReview) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'আপনি ইতিমধ্যে এই কোর্সের জন্য রিভিউ দিয়েছেন।'
-                ], 400);
+                return back()
+                    ->withErrors(['review' => 'আপনি ইতিমধ্যে এই কোর্সের জন্য রিভিউ দিয়েছেন।'])
+                    ->withInput();
             }
 
             // Create review with pending status
@@ -439,21 +450,17 @@ class StudentController extends Controller
                 'status' => 'pending', // Reviews need approval
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'আপনার মতামত সফলভাবে জমা হয়েছে! অনুমোদনের পরে এটি প্রদর্শিত হবে।',
-                'review' => $review
-            ], 200);
+            return back()->with('success', 'আপনার মতামত সফলভাবে জমা হয়েছে! অনুমোদনের পরে এটি প্রদর্শিত হবে।');
+
         } catch (\Exception $e) {
             \Log::error('Review submission failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'দুঃখিত, আপনার মতামত জমা দেওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।'
-            ], 500);
+            return back()
+                ->withErrors(['review' => 'দুঃখিত, আপনার মতামত জমা দেওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।'])
+                ->withInput();
         }
     }
 
@@ -494,11 +501,11 @@ class StudentController extends Controller
             // Combine date and time properly - start_time is now a string
             $startDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $class->start_date->format('Y-m-d') . ' ' . $class->start_time);
             $endDateTime = $startDateTime->copy()->addMinutes($class->duration_minutes);
-            $isCompleted = $endDateTime->isPast();
+            $isExpired = $endDateTime->isPast();
             $isCurrentlyLive = $now->between($startDateTime, $endDateTime);
             $isUpcoming = $startDateTime->isFuture();
 
-            $status = $isCompleted ? 'completed' : ($isCurrentlyLive ? 'live' : 'scheduled');
+            $status = $isExpired ? 'expired' : ($isCurrentlyLive ? 'live' : 'scheduled');
 
             $liveClassesData[] = [
                 'id' => $class->id,
@@ -543,7 +550,7 @@ class StudentController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . Auth::id(),
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'password' => 'nullable|string|min:8|confirmed',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
         ]);
 
         $student = Auth::user();
@@ -552,12 +559,41 @@ class StudentController extends Controller
         $student->phone = $request->phone;
         $student->address = $request->address;
 
-        if ($request->filled('password')) {
-            $student->password = bcrypt($request->password);
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('avatars', $filename, 'public');
+            $student->avatar_url = '/storage/' . $path;
         }
 
         $student->save();
 
         return back()->with('success', 'Profile updated successfully!');
+    }
+
+    /**
+     * Update student password.
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $student = Auth::user();
+
+        // Verify current password
+        if (!Hash::check($request->current_password, $student->password)) {
+            return back()->withErrors([
+                'current_password' => 'The current password is incorrect.',
+            ]);
+        }
+
+        $student->password = bcrypt($request->password);
+        $student->save();
+
+        return back()->with('success', 'Password updated successfully!');
     }
 }

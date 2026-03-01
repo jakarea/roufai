@@ -50,6 +50,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->group(function (
     Route::post('/courses/{id}/review', [StudentController::class, 'submitReview'])->name('student.courses.review');
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
     Route::put('/profile', [StudentController::class, 'updateProfile'])->name('student.profile.update');
+    Route::put('/password', [StudentController::class, 'updatePassword'])->name('student.password.update');
     Route::get('/certificate/{courseId}', [CertificateController::class, 'download'])->name('student.certificate.download');
 });
 
