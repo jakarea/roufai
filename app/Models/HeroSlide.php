@@ -22,6 +22,10 @@ class HeroSlide extends Model
         'order_index' => 'integer',
     ];
 
+    protected $appends = [
+        'image_url',
+    ];
+
     /**
      * Scope to get only active slides
      */

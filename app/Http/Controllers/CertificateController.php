@@ -69,7 +69,7 @@ class CertificateController extends Controller
         ])->render();
 
         $pdf->loadHtml($html);
-        $pdf->setPaper('A4', 'landscape');
+        $pdf->setPaper([0, 0, 1122.52, 793.7], 'landscape'); // A4 in points (297mm x 210mm)
         $pdf->render();
 
         // Generate filename
