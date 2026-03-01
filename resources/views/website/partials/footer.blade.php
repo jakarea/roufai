@@ -86,13 +86,14 @@
             <!-- card -->
             <!-- card -->
             <div class="w-full lg:col-span-3">
-                <h6 class="font-medium text-base lg:text-lg text-[#ABABAB]">কোর্স সমূহ </h6>
+                <h6 class="font-medium text-base lg:text-lg text-[#ABABAB]">শীর্ষ কোর্সসমূহ</h6>
                 <ul class="mt-5 lg:mt-[30px] flex flex-col gap-y-2 lg:gap-y-5">
                     @if($topCourses->count() > 0)
                         @foreach($topCourses as $course)
                         <li>
                             <a href="{{ route('courses.overview', $course->slug) }}"
-                               class="block font-medium text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff]">
+                               class="block font-medium text-sm lg:text-base text-[#ABABAB] anim hover:text-[#fff] truncate"
+                               title="{{ $course->title }}">
                                 {{ $course->title }}
                             </a>
                         </li>

@@ -24,7 +24,7 @@
         <!-- Slide {{ $index + 1 }} -->
         <div class="hero-slide {{ $index === 0 ? 'active' : '' }} absolute inset-0 w-full h-full" style="opacity: {{ $index === 0 ? '1' : '0' }}; z-index: {{ $index === 0 ? '10' : '0' }};">
             <div class="absolute inset-0 w-full h-full">
-                <img src="{{ asset('website-images/' . $slide->background_image) }}" alt="{{ $slide->title }}" class="w-full h-full object-cover">
+                <img src="{{ $slide->image_url }}" alt="{{ $slide->title }}" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-[#000]/50"></div>
                 <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
             </div>

@@ -43,10 +43,20 @@ class HeroSlide extends Model
      */
     public function getImageUrlAttribute()
     {
+        if (empty($this->background_image)) {
+            return null;
+        }
+
         if (str_starts_with($this->background_image, 'http')) {
             return $this->background_image;
         }
 
-        return asset('website-images/' . $this->background_image);
+        // Check if the path already includes the directory
+        if (str_starts_with($this->background_image, 'hero-slides/')) {
+            return Storage::url($this->background_image);
+        }
+
+        // Prepend directory if just filename is stored
+        return Storage::url('hero-slides/' . $this->background_image);
     }
 }
