@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 // Website routes (public pages)
 Route::get('/', [WebsiteController::class, 'index'])->name('home');
 Route::get('/courses', [WebsiteController::class, 'courses'])->name('courses');
-Route::get('/courses/{slug}', [WebsiteController::class, 'courseDetails'])->name('courses.overview');
+Route::get('/courses/{slug}', [WebsiteController::class, 'courseDetails'])->name('courses.overview'); 
 Route::get('/expert-connection', [WebsiteController::class, 'expertConnection'])->name('expert.connection');
 Route::get('/terms', [WebsiteController::class, 'terms'])->name('terms');
 Route::get('/ai-update', [BlogController::class, 'index'])->name('blog.index');
@@ -50,6 +50,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->group(function (
     Route::post('/courses/{id}/review', [StudentController::class, 'submitReview'])->name('student.courses.review');
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
     Route::put('/profile', [StudentController::class, 'updateProfile'])->name('student.profile.update');
+    Route::put('/password', [StudentController::class, 'updatePassword'])->name('student.password.update');
     Route::get('/certificate/{courseId}', [CertificateController::class, 'download'])->name('student.certificate.download');
 });
 

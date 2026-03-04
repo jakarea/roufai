@@ -353,7 +353,7 @@ export default function Dashboard({ auth, enrollments, totalLearningTime, certif
                                             </h3>
 
                                             <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                                                {enrollment.course.description}
+                                                {enrollment.course.short_description || enrollment.course.description}
                                             </p>
 
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-200">

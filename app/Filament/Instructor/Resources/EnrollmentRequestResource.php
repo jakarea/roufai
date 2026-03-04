@@ -45,17 +45,33 @@ class EnrollmentRequestResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Request Details')
-                    ->description('Student enrollment request details')
+                Forms\Components\Section::make('Student Information')
+                    ->description('Details about the student')
                     ->schema([
-                        Forms\Components\TextInput::make('user.name')
+                        Forms\Components\TextInput::make('name')
                             ->label('Student Name')
                             ->disabled()
                             ->columnSpan(2),
-                        Forms\Components\TextInput::make('user.email')
+                        Forms\Components\TextInput::make('email')
                             ->label('Student Email')
                             ->disabled()
                             ->columnSpan(2),
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Student Phone')
+                            ->disabled()
+                            ->columnSpan(2),
+                        Forms\Components\TextInput::make('user.email')
+                            ->label('User Account Email')
+                            ->disabled()
+                            ->placeholder(fn ($record) => $record?->user?->email ?? 'No account created yet')
+                            ->columnSpan(2),
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
+
+                Forms\Components\Section::make('Course Information')
+                    ->description('Course details')
+                    ->schema([
                         Forms\Components\TextInput::make('course.title')
                             ->label('Course')
                             ->disabled()
@@ -67,9 +83,11 @@ class EnrollmentRequestResource extends Resource
                         Forms\Components\TextInput::make('amount_paid')
                             ->label('Amount Paid (BDT)')
                             ->disabled()
+                            ->prefix('৳')
                             ->columnSpan(1),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpanFull(),
 
                 Forms\Components\Section::make('Payment Information')
                     ->description('Payment details provided by student')
@@ -77,22 +95,20 @@ class EnrollmentRequestResource extends Resource
                         Forms\Components\TextInput::make('transaction_id')
                             ->label('Transaction ID')
                             ->disabled()
-                            ->columnSpan(2),
+                            ->columnSpan(2)
+                            ->copyable(),
                         Forms\Components\TextInput::make('payment_method')
                             ->label('Payment Method')
                             ->disabled()
-                            ->columnSpan(1),
+                            ->columnSpan(1)
+                            ->formatStateUsing(fn ($state) => ucfirst($state ?? '')),
                         Forms\Components\TextInput::make('payment_number')
                             ->label('Payment Number')
                             ->disabled()
                             ->columnSpan(1),
-                        Forms\Components\Textarea::make('note')
-                            ->label('Student Note')
-                            ->disabled()
-                            ->rows(3)
-                            ->columnSpanFull(),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpanFull(),
 
                 Forms\Components\Section::make('Request Status')
                     ->description('Current status of this request')
@@ -115,7 +131,25 @@ class EnrollmentRequestResource extends Resource
                             ->disabled()
                             ->columnSpanFull(),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->columnSpanFull(),
+
+                Forms\Components\Section::make('Timestamps')
+                    ->description('Request timeline')
+                    ->schema([
+                        Forms\Components\TextInput::make('created_at')
+                            ->label('Request Submitted At')
+                            ->disabled()
+                            ->formatStateUsing(fn ($state) => $state ? $state->format('M j, Y g:i A') : 'N/A')
+                            ->columnSpan(1),
+                        Forms\Components\TextInput::make('updated_at')
+                            ->label('Last Updated At')
+                            ->disabled()
+                            ->formatStateUsing(fn ($state) => $state ? $state->format('M j, Y g:i A') : 'N/A')
+                            ->columnSpan(1),
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -248,6 +282,7 @@ class EnrollmentRequestResource extends Resource
     {
         return [
             'index' => Pages\ListEnrollmentRequests::route('/'),
+            'view' => Pages\ViewEnrollmentRequest::route('/{record}'),
         ];
     }
 

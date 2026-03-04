@@ -5,42 +5,39 @@
 @section('keywords', $course->title . ', AI কোর্স, ' . ($course->category->name ?? 'AI ট্রেনিং') . ', ' . str_replace('-', ' ', $course->slug))
 
 @section('content')
-
-<!-- Include Header -->
+ 
+ <!-- Include Header -->
 @include('website.partials.header')
 
 <!-- hero ellipse -->
 <img src="{{ asset('website-images/hero-ellipse.svg') }}" alt="ellipse"
     class="absolute left-0 top-0 lg:object-contain lg:h-auto">
+ 
+
+<!-- Page Title Section -->
+<section class="w-full py-10 lg:py-12 relative">
+    <div class="container-x">
+        <h1 class="font-bold text-3xl md:text-4xl lg:text-5xl text-[#E2E8F0] mb-4">
+            {{ $course->title }}
+        </h1>
+        <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] max-w-4xl">
+            {{ Str::limit(strip_tags($course->short_description ?? $course->description), 200) }}
+        </p>
+    </div>
+</section>
 
 <!-- Course Details Section -->
-<section class="w-full py-10 lg:py-16 relative">
+<section class="w-full py-6 lg:py-8 relative z-999">
     <div class="container-x">
-        <!-- Breadcrumb -->
-        <nav class="mb-8">
-            <ol class="flex items-center gap-x-2 text-sm">
-                <li><a href="{{ route('home') }}" class="text-[#ABABAB] hover:text-white">হোম</a></li>
-                <li class="text-[#ABABAB]">/</li>
-                <li><a href="{{ route('courses') }}" class="text-[#ABABAB] hover:text-white">কোর্সসমূহ</a></li>
-                <li class="text-[#ABABAB]">/</li>
-                <li class="text-white">{{ $course->title }}</li>
-            </ol>
-        </nav>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Content -->
             <div class="lg:col-span-2">
-                <!-- Course Title -->
-                <h1 class="font-bold text-2xl md:text-3xl lg:text-4xl text-[#E2E8F0] mb-4">
-                    {{ $course->title }}
-                </h1>
-
                 <!-- Course Meta -->
                 <div class="flex flex-wrap items-center gap-4 mb-6 text-sm text-[#ABABAB]">
                     @if($course->category)
                     <span class="bg-white/10 px-3 py-1 rounded-full">{{ $course->category->name }}</span>
                     @endif
-                    <span>⭐ {{ number_format($avgRating, 1) }} ({{ $course->reviews->count() }} রিভিউ)</span>
+                    <span>⭐ {{ number_format($avgRating, 1) }} ({{ $course->reviews->where('status', 'approved')->count() }} রিভিউ)</span>
                     <span>👥 {{ $course->enrollments_count }} শিক্ষার্থী</span>
                 </div>
 
@@ -324,9 +321,9 @@
                     @endif
 
                     <!-- Existing Reviews -->
-                    @if($course->reviews && $course->reviews->count() > 0)
+                    @if($course->reviews && $course->reviews->where('status', 'approved')->count() > 0)
                     <div class="space-y-4">
-                        @foreach($course->reviews->take(5) as $review)
+                        @foreach($course->reviews->where('status', 'approved')->take(5) as $review)
                         <div class="bg-white/5 border border-white/10 rounded-lg p-4">
                             <div class="flex items-center gap-3 mb-3">
                                 @if($review->user && $review->user->avatar)
@@ -366,11 +363,13 @@
                     <!-- Course Card -->
                     <div class="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
                         <!-- Course Thumbnail -->
-                        <img src="{{ $course->thumbnail ?? asset('website-images/default-course-thumbnail.webp') }}"
-                            alt="{{ $course->title }}"
-                            class="w-full h-48 object-cover rounded-lg mb-4"
-                            width="400" height="192"
-                            loading="lazy">
+                        <div class="aspect-video w-full mb-4 rounded-lg overflow-hidden bg-white/5">
+                            <img src="{{ $course->thumbnail_url ?? asset('website-images/default-course-thumbnail.webp') }}"
+                                alt="{{ $course->title }}"
+                                class="w-full h-full object-cover"
+                                width="400" height="225"
+                                loading="lazy">
+                        </div>
 
                         <!-- Price -->
                         <div class="mb-4">
@@ -503,72 +502,71 @@
 
 @section('scripts')
 <script>
-    // Wait for DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        // Module Accordion Functionality
-        window.toggleModule = function(moduleIndex) {
-            const content = document.getElementById(`module-content-${moduleIndex}`);
-            const arrow = document.querySelector(`.module-item[data-module-index="${moduleIndex}"] .module-arrow`);
+    // Module Accordion Functionality - Define immediately
+    window.toggleModule = function(moduleIndex) {
+        const content = document.getElementById(`module-content-${moduleIndex}`);
+        const arrow = document.querySelector(`.module-item[data-module-index="${moduleIndex}"] .module-arrow`);
 
-            if (content && arrow) {
-                if (content.classList.contains('hidden')) {
-                    content.classList.remove('hidden');
-                    arrow.classList.add('rotate-180');
-                } else {
-                    content.classList.add('hidden');
-                    arrow.classList.remove('rotate-180');
-                }
+        if (content && arrow) {
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
             }
-        };
+        }
+    };
 
-        // Login Popup Functions
-        window.showLoginPopup = function() {
-            const popup = document.getElementById('login-popup');
-            if (popup) {
-                popup.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        };
+    // Login Popup Functions - Define immediately
+    window.showLoginPopup = function() {
+        const popup = document.getElementById('login-popup');
+        if (popup) {
+            popup.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    };
 
-        window.hideLoginPopup = function() {
-            const popup = document.getElementById('login-popup');
-            if (popup) {
-                popup.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-        };
+    window.hideLoginPopup = function() {
+        const popup = document.getElementById('login-popup');
+        if (popup) {
+            popup.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    };
 
-        // Close popup on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                window.hideLoginPopup();
+    // Close popup on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            window.hideLoginPopup();
+        }
+    });
+
+    // Rating Stars Functionality - Define immediately
+    let selectedRating = 5;
+
+    window.setRating = function(rating) {
+        selectedRating = rating;
+        const ratingInput = document.getElementById('rating-input');
+        if (ratingInput) {
+            ratingInput.value = rating;
+        }
+
+        // Update star colors
+        const stars = document.querySelectorAll('.star-btn');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.remove('text-gray-600');
+                star.classList.add('text-yellow-400');
+            } else {
+                star.classList.remove('text-yellow-400');
+                star.classList.add('text-gray-600');
             }
         });
+    };
 
-        // Rating Stars Functionality
-        let selectedRating = 5;
-
-        window.setRating = function(rating) {
-            selectedRating = rating;
-            const ratingInput = document.getElementById('rating-input');
-            if (ratingInput) {
-                ratingInput.value = rating;
-            }
-
-            // Update star colors
-            const stars = document.querySelectorAll('.star-btn');
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.classList.remove('text-gray-600');
-                    star.classList.add('text-yellow-400');
-                } else {
-                    star.classList.remove('text-yellow-400');
-                    star.classList.add('text-gray-600');
-                }
-            });
-        };
-
-        // Review Form Submission - Only if form exists
+    // Review Form Submission - Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
         const reviewForm = document.getElementById('review-form');
         if (reviewForm) {
             reviewForm.addEventListener('submit', function(e) {

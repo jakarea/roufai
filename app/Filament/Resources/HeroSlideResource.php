@@ -52,7 +52,7 @@ class HeroSlideResource extends Resource
                             ->columnSpan(1),
                         Forms\Components\TextInput::make('button_url')
                             ->label('Button URL')
-                            ->url()
+                            ->helperText('Enter a URL (e.g., https://example.com) or a path (e.g., /courses)')
                             ->columnSpan(1),
                     ])
                     ->columns(2),
@@ -87,7 +87,7 @@ class HeroSlideResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('background_image')
+                Tables\Columns\ImageColumn::make('image_url')
                     ->label('Image')
                     ->square()
                     ->size(80),

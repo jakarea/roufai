@@ -146,7 +146,7 @@ class LiveClassResource extends Resource
                     ->label('Date')
                     ->date('d-m-Y')
                     ->sortable()
-                    ->description(fn ($record): string => $record->start_time?->format('H:i') . ' • ' . $record->duration_minutes . ' min'),
+                    ->description(fn ($record): string => substr($record->start_time ?? '00:00:00', 0, 5) . ' • ' . $record->duration_minutes . ' min'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime('M j, Y')
