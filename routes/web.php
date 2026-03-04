@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 // Website routes (public pages)
 Route::get('/', [WebsiteController::class, 'index'])->name('home');
 Route::get('/courses', [WebsiteController::class, 'courses'])->name('courses');
-Route::get('/courses/{slug}', [WebsiteController::class, 'courseDetails'])->name('courses.overview');
+Route::get('/courses/{slug}', [WebsiteController::class, 'courseDetails'])->name('courses.overview'); 
 Route::get('/expert-connection', [WebsiteController::class, 'expertConnection'])->name('expert.connection');
 Route::get('/terms', [WebsiteController::class, 'terms'])->name('terms');
 Route::get('/ai-update', [BlogController::class, 'index'])->name('blog.index');

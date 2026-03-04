@@ -151,6 +151,70 @@ class WebsiteController extends Controller
         ));
     }
 
+    public function view(Request $request)
+    {
+        $query = Course::where('is_published', true)
+            ->with(['category', 'instructor', 'reviews.user', 'modules.lessons'])
+            ->withCount(['enrollments', 'reviews']);
+
+        // Filter by title
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by category
+        if ($request->has('category') && !empty($request->category)) {
+            $query->where('category_id', $request->category);
+        }
+
+        // Filter by type (FREE/PAID)
+        if ($request->has('type') && !empty($request->type)) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by price (max price)
+        if ($request->has('price') && !empty($request->price)) {
+            $query->where('price', '<=', $request->price);
+        }
+
+        $courses = $query->latest()->paginate(12);
+        $categories = Category::all();
+
+        // Get enrolled course IDs and pending request course IDs for current user
+        $enrolledCourseIds = [];
+        $pendingRequestCourseIds = [];
+
+        if (Auth::check()) {
+            $enrolledCourseIds = Enrollment::where('user_id', Auth::id())
+                ->pluck('course_id')
+                ->toArray();
+
+            $pendingRequestCourseIds = EnrollmentRequest::where('user_id', Auth::id())
+                ->where('status', 'pending')
+                ->pluck('course_id')
+                ->toArray();
+        }
+
+        // Get site settings for footer
+        $siteSettings = SiteSetting::getSettings();
+
+        // Get top 3 enrolled courses for footer
+        $topCourses = Course::where('is_published', true)
+            ->withCount('enrollments')
+            ->orderBy('enrollments_count', 'desc')
+            ->take(3)
+            ->get();
+
+        return view('website.course-view', compact(
+            'courses',
+            'categories',
+            'enrolledCourseIds',
+            'pendingRequestCourseIds',
+            'siteSettings',
+            'topCourses'
+        ));
+    }
+
     /**
      * Display course details.
      */
