@@ -8,11 +8,14 @@ use Illuminate\Support\Facades\Storage;
 class HeroSlide extends Model
 {
     protected $fillable = [
+        'type',
         'title',
         'description',
         'button_text',
         'button_url',
         'background_image',
+        'video_url',
+        'show_content',
         'order_index',
         'is_active',
     ];
@@ -20,6 +23,8 @@ class HeroSlide extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'order_index' => 'integer',
+        'type' => 'string',
+        'show_content' => 'boolean',
     ];
 
     protected $appends = [

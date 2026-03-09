@@ -1,6 +1,6 @@
 @extends('layouts.website')
 
-@section('title', $course->title . ' - AI কোর্স | আব্দুর রউফ')
+@section('title', 'RoufAi Academy | ' . $course->title)
 @section('description', Str::limit(strip_tags($course->short_description ?? $course->description), 160) . ' - এই কোর্সে শিখুন ' . $course->title . '। লাইভ ক্লাস, ভিডিও টিউটোরিয়াল এবং প্রজেক্ট সহ কমপ্লিট লার্নিং অভিজ্ঞতা।')
 @section('keywords', $course->title . ', AI কোর্স, ' . ($course->category->name ?? 'AI ট্রেনিং') . ', ' . str_replace('-', ' ', $course->slug))
 

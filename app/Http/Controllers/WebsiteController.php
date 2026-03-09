@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Course;
 use App\Models\Category;
 use App\Models\Enrollment;
-use App\Models\Review;
-use App\Models\BootcampConfig;
 use App\Models\EnrollmentRequest;
+use App\Models\Review;
 use App\Models\SiteSetting;
 use App\Models\HeroSlide;
 use App\Models\FAQ;
@@ -58,11 +57,13 @@ class WebsiteController extends Controller
             ->take(6)
             ->get();
 
-        // Get active bootcamp configuration
-        $bootcampConfig = BootcampConfig::where('is_active', true)
-            ->with(['course.instructor', 'instructor'])
+        // Get bootcamp courses (published bootcamps that should show on homepage)
+        $bootcampCourses = Course::where('is_published', true)
+            ->where('is_bootcamp', true)
+            ->where('show_on_homepage', true)
+            ->with(['instructor'])
             ->latest()
-            ->first();
+            ->get();
 
         // Get top 3 enrolled courses for footer
         $topCourses = Course::where('is_published', true)
@@ -78,7 +79,7 @@ class WebsiteController extends Controller
             'courses',
             'categories',
             'reviews',
-            'bootcampConfig',
+            'bootcampCourses',
             'siteSettings',
             'topCourses'
         ));
@@ -486,76 +487,6 @@ class WebsiteController extends Controller
             'success' => true,
             'message' => 'আপনার এনরোলমেন্ট রিকোয়েস্ট সফলভাবে জমা হয়েছে! আমরা শীঘ্রই আপনার পেমেন্ট যাচাই করে আপনার সাথে যোগাযোগ করবো।',
             'redirect' => route('courses.overview', ['slug' => $course->slug])
-        ]);
-    }
-
-    /**
-     * Submit bootcamp enrollment request.
-     */
-    public function submitBootcampEnrollment(Request $request)
-    {
-        // Validate the request
-        $validated = $request->validate([
-            'payment_method' => 'required|in:nagad,bkash,rocket',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'payment_number' => 'required|string|max:20',
-            'transaction_id' => 'required|string|max:255',
-            'paid_amount' => 'required|numeric|min:0',
-            'course_id' => 'nullable|exists:courses,id',
-        ]);
-
-        // Get the active bootcamp config
-        $bootcampConfig = BootcampConfig::where('is_active', true)->latest()->first();
-
-        if (!$bootcampConfig) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No active bootcamp found.',
-            ], 404);
-        }
-
-        // Determine course_id
-        $courseId = $validated['course_id'] ?? $bootcampConfig->course_id;
-
-        // Create enrollment request
-        $enrollmentRequest = EnrollmentRequest::create([
-            'user_id' => Auth::check() ? Auth::id() : null,
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['payment_number'], // Store payment_number in phone field
-            'course_id' => $courseId,
-            'transaction_id' => $validated['transaction_id'],
-            'payment_method' => $validated['payment_method'],
-            'payment_number' => $validated['payment_number'],
-            'amount_paid' => $validated['paid_amount'],
-            'status' => 'pending',
-        ]);
-
-        // Send SMS notification to student about bootcamp enrollment request received
-        if ($validated['payment_number']) {
-            try {
-                $smsService = new SMSService();
-                $smsService->sendEnrollmentRequestReceived(
-                    $validated['payment_number'],
-                    $validated['name'],
-                    'Bootcamp Course',
-                    $validated['paid_amount'],
-                    $validated['transaction_id']
-                );
-            } catch (\Exception $e) {
-                // Log SMS error but don't fail the enrollment request
-                \Log::error('SMS sending failed for bootcamp enrollment request', [
-                    'error' => $e->getMessage(),
-                    'email' => $validated['email'],
-                    'course_id' => $courseId
-                ]);
-            }
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'আপনার এনরোলমেন্ট রিকোয়েস্ট সফলভাবে জমা হয়েছে! আমরা শীঘ্রই আপনার পেমেন্ট যাচাই করে আপনার সাথে যোগাযোগ করবো।',
         ]);
     }
 

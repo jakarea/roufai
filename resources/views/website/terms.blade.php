@@ -1,6 +1,6 @@
 @extends('layouts.website')
 
-@section('title', 'শর্তাবলী ও শর্তাবলী - AI কোর্স | আব্দুর রউফ')
+@section('title', 'RoufAi Academy | Terms and Conditions')
 @section('description', 'Rouf AI Academy এর শর্তাবলী ও শর্তাবলী সম্পর্কে জানুন। কোর্স এনরোলমেন্ট এবং ব্যবহারের শর্তাবলী।')
 
 @section('content')

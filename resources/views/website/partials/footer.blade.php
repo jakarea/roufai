@@ -6,7 +6,7 @@
             <!-- card -->
             <div class="w-full lg:col-span-4">
                 <a href="{{ route('home') }}">
-                    <img src="{{ asset('website-images/logo.svg') }}" alt="logo white" class="w-full max-w-[108px]">
+                    <img src="{{ $siteSettings->logo_url ?? asset('website-images/logo.png') }}" alt="logo" class="w-full max-w-[108px]">
                 </a>
                 <p class="text-[#ABABAB] font-normal text-base mt-5 mb-3 lg:mt-[30px] lg:mb-5">{!! $siteSettings->company_tagline ?? 'বাংলাদেশের শীর্ষ এআই ক্রিয়েটিভ ট্রেনিং প্ল্যাটফর্ম' !!}</p>
 

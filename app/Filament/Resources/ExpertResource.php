@@ -31,6 +31,42 @@ class ExpertResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make('Import from Instructor')
+                    ->description('Select an instructor to auto-fill expert information')
+                    ->schema([
+                        Forms\Components\Select::make('instructor_id')
+                            ->label('Select Instructor')
+                            ->options(function () {
+                                return \App\Models\User::where('role', 'instructor')
+                                    ->get()
+                                    ->pluck('name', 'id')
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->reactive()
+                            ->dehydrated(false) // Don't save to database
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                if (filled($state)) {
+                                    $instructor = \App\Models\User::find($state);
+
+                                    if ($instructor) {
+                                        // Auto-fill expert information from instructor
+                                        $set('name', $instructor->name);
+                                        $set('bio', $instructor->bio);
+
+                                        // Set avatar URL if exists
+                                        if ($instructor->avatar_url) {
+                                            $set('image_url', $instructor->avatar_url);
+                                        }
+                                    }
+                                }
+                            })
+                            ->helperText('Select an instructor to automatically import their information')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+
                 Forms\Components\Section::make('Expert Information')
                     ->schema([
                         Forms\Components\TextInput::make('name')

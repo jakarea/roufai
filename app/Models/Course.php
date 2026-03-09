@@ -25,12 +25,17 @@ class Course extends Model
         'video_url',
         'is_published',
         'slug',
+        'is_bootcamp',
+        'bootcamp_feature_image',
+        'show_on_homepage',
     ];
 
     protected $casts = [
         'type' => 'string',
         'price' => 'integer',
         'is_published' => 'boolean',
+        'is_bootcamp' => 'boolean',
+        'show_on_homepage' => 'boolean',
     ];
 
     protected $appends = [
@@ -111,5 +116,17 @@ class Course extends Model
         }
 
         return $this->attributes['thumbnail_url'] ?? null;
+    }
+
+    /**
+     * Get the bootcamp feature image URL
+     */
+    public function getBootcampFeatureImageUrlAttribute(): ?string
+    {
+        if ($this->bootcamp_feature_image) {
+            return Storage::url($this->bootcamp_feature_image);
+        }
+
+        return null;
     }
 }

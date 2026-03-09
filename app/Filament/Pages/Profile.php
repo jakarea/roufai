@@ -10,6 +10,8 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class Profile extends Page implements HasForms
 {
@@ -85,6 +87,44 @@ class Profile extends Page implements HasForms
                             ->columnSpanFull(),
                     ])
                     ->columns(1),
+
+                \Filament\Forms\Components\Section::make('Change Password')
+                    ->description('Leave empty if you don\'t want to change your password')
+                    ->schema([
+                        TextInput::make('current_password')
+                            ->label('Current Password')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(false)
+                            ->columnSpanFull()
+                            ->required(fn ($get) => filled($get('new_password')))
+                            ->rules(fn ($get) => [
+                                function ($attribute, $value, $fail) use ($get) {
+                                    if (filled($get('new_password')) && !Hash::check($value, Auth::user()->password)) {
+                                        $fail('The current password is incorrect.');
+                                    }
+                                },
+                            ]),
+                        TextInput::make('new_password')
+                            ->label('New Password')
+                            ->password()
+                            ->revealable()
+                            ->minLength(8)
+                            ->rules([Password::defaults()])
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->columnSpanFull()
+                            ->reactive()
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('current_password', null)),
+                        TextInput::make('new_password_confirmation')
+                            ->label('Confirm New Password')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(false)
+                            ->same('new_password')
+                            ->columnSpanFull()
+                            ->required(fn ($get) => filled($get('new_password'))),
+                    ])
+                    ->columns(1),
             ])
             ->statePath('data')
             ->model(Auth::user());
@@ -112,12 +152,31 @@ class Profile extends Page implements HasForms
         $user->address = $data['address'];
         $user->bio = $data['bio'];
         $user->payment_details = $data['payment_details'];
+
+        // Update password if provided
+        if (filled($data['new_password'])) {
+            $user->password = Hash::make($data['new_password']);
+        }
+
         $user->save();
 
         Notification::make()
             ->title('Profile Updated')
             ->success()
             ->send();
+
+        // Redirect to login to force re-authentication after password change
+        if (filled($data['new_password'])) {
+            Auth::logout();
+            Notification::make()
+                ->title('Password Changed')
+                ->body('Please log in again with your new password.')
+                ->warning()
+                ->send();
+
+            redirect()->route('login');
+            return;
+        }
 
         $this->mount();
     }

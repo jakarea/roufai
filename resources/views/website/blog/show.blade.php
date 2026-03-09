@@ -2,7 +2,7 @@
 
 @use('Illuminate\Support\Str')
 
-@section('title', $blogPost->title . ' - AI আপডেট | আব্দুর রউফ')
+@section('title', 'RoufAi Academy | ' . $blogPost->title)
 @section('description', Str::limit(strip_tags($blogPost->excerpt ?? $blogPost->content), 160))
 @section('keywords', $blogPost->title . ', AI আপডেট, ' . ($blogPost->category ?? 'AI খবর') . ', ' . str_replace('-', ' ', $blogPost->slug))
 

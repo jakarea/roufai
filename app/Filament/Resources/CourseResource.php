@@ -35,7 +35,7 @@ class CourseResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return false;
+        return true; // Allow editing of bootcamp fields
     }
 
     public static function form(Form $form): Form
@@ -79,6 +79,28 @@ class CourseResource extends Resource
                             ->maxLength(255),
                     ])
                     ->columns(2),
+                Forms\Components\Section::make('Bootcamp Settings')
+                    ->schema([
+                        Forms\Components\Toggle::make('is_bootcamp')
+                            ->label('Enable Bootcamp')
+                            ->helperText('Enable this to treat the course as a bootcamp')
+                            ->reactive()
+                            ->required(),
+                        Forms\Components\FileUpload::make('bootcamp_feature_image')
+                            ->label('Bootcamp Feature Image')
+                            ->helperText('Upload a feature image that will be displayed on the home page')
+                            ->image()
+                            ->directory('bootcamp-features')
+                            ->visibility('public')
+                            ->required()
+                            ->visible(fn (callable $get) => $get('is_bootcamp')),
+                        Forms\Components\Toggle::make('show_on_homepage')
+                            ->label('Show on Homepage')
+                            ->helperText('If enabled, this bootcamp will be displayed on the home page')
+                            ->visible(fn (callable $get) => $get('is_bootcamp'))
+                            ->required(),
+                    ])
+                    ->columns(1),
             ]);
     }
 
@@ -98,6 +120,14 @@ class CourseResource extends Resource
                     ->weight('bold')
                     ->description(fn ($record): string => $record->category?->name ?? 'N/A')
                     ->wrap(),
+                Tables\Columns\IconColumn::make('is_bootcamp')
+                    ->label('Bootcamp')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-fire')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('danger')
+                    ->falseColor('gray')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('instructor_id')
                     ->label('Instructor')
                     ->formatStateUsing(fn ($state, $record): string => $record->instructor?->name ?? 'N/A')
@@ -119,6 +149,15 @@ class CourseResource extends Resource
                     ->trueColor('success')
                     ->falseColor('danger')
                     ->sortable(),
+                Tables\Columns\IconColumn::make('show_on_homepage')
+                    ->label('Homepage')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-home')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('gray')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('enrollments_count')
                     ->label('Students')
                     ->sortable()
@@ -151,6 +190,11 @@ class CourseResource extends Resource
                     ->placeholder('All courses')
                     ->trueLabel('Published only')
                     ->falseLabel('Drafts only'),
+                Tables\Filters\TernaryFilter::make('is_bootcamp')
+                    ->label('Bootcamp')
+                    ->placeholder('All courses')
+                    ->trueLabel('Bootcamps only')
+                    ->falseLabel('Regular courses only'),
                 Tables\Filters\SelectFilter::make('price_type')
                     ->label('Price Type')
                     ->options([
