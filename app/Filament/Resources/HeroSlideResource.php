@@ -33,6 +33,22 @@ class HeroSlideResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make('Slide Type')
+                    ->schema([
+                        Forms\Components\Select::make('type')
+                            ->label('Slide Type')
+                            ->options([
+                                'image' => 'Image Slide',
+                                'video' => 'YouTube Video Slide',
+                            ])
+                            ->required()
+                            ->default('image')
+                            ->reactive()
+                            ->helperText('Choose the type of media for this slide')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+
                 Forms\Components\Section::make('Slide Content')
                     ->schema([
                         Forms\Components\TextInput::make('title')
@@ -56,6 +72,7 @@ class HeroSlideResource extends Resource
                             ->columnSpan(1),
                     ])
                     ->columns(2),
+
                 Forms\Components\Section::make('Media & Settings')
                     ->schema([
                         Forms\Components\FileUpload::make('background_image')
@@ -64,7 +81,23 @@ class HeroSlideResource extends Resource
                             ->imageEditor()
                             ->directory('hero-slides')
                             ->visibility('public')
-                            ->required()
+                            ->required(fn (callable $get) => $get('type') === 'image')
+                            ->visible(fn (callable $get) => $get('type') === 'image')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('video_url')
+                            ->label('YouTube Video URL')
+                            ->url()
+                            ->placeholder('https://www.youtube.com/watch?v=...')
+                            ->helperText('Paste the full YouTube video URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)')
+                            ->required(fn (callable $get) => $get('type') === 'video')
+                            ->visible(fn (callable $get) => $get('type') === 'video')
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('show_content')
+                            ->label('Show Content Overlay')
+                            ->helperText('Enable to show title, description, and button over the video')
+                            ->default(true)
+                            ->visible(fn (callable $get) => $get('type') === 'video')
+                            ->reactive()
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('order_index')
                             ->label('Display Order')
@@ -87,10 +120,22 @@ class HeroSlideResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\BadgeColumn::make('type')
+                    ->label('Type')
+                    ->colors([
+                        'success' => 'image',
+                        'warning' => 'video',
+                    ])
+                    ->sortable(),
                 Tables\Columns\ImageColumn::make('image_url')
-                    ->label('Image')
+                    ->label('Preview')
                     ->square()
-                    ->size(80),
+                    ->size(80)
+                    ->visible(fn ($record): bool => $record?->type === 'image'),
+                Tables\Columns\TextColumn::make('video_url')
+                    ->label('Video URL')
+                    ->limit(30)
+                    ->visible(fn ($record): bool => $record?->type === 'video'),
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable()
@@ -102,6 +147,15 @@ class HeroSlideResource extends Resource
                 Tables\Columns\TextColumn::make('button_url')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\IconColumn::make('show_content')
+                    ->label('Content')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-eye')
+                    ->falseIcon('heroicon-o-eye-slash')
+                    ->trueColor('success')
+                    ->falseColor('gray')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('order_index')
                     ->label('Order')
                     ->numeric()
@@ -125,6 +179,12 @@ class HeroSlideResource extends Resource
             ->reorderable('order_index')
             ->defaultSort('order_index')
             ->filters([
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Type')
+                    ->options([
+                        'image' => 'Image Slides',
+                        'video' => 'Video Slides',
+                    ]),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active')
                     ->placeholder('All slides')
@@ -141,6 +201,13 @@ class HeroSlideResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        // Don't filter by type - allow editing all slides
+        // The mode switching buttons will handle activation/deactivation
+        return parent::getEloquentQuery()->orderBy('order_index');
     }
 
     public static function getRelations(): array

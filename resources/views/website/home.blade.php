@@ -1,6 +1,6 @@
 @extends('layouts.website')
 
-@section('title', 'আব্দুর রউফ - বাংলাদেশের সেরা AI ক্রিয়েটিভ ট্রেনিং প্ল্যাটফর্ম | AI কোর্স ও বুটক্যাম্প')
+@section('title', 'RoufAi Academy | Home')
 @section('description', 'AI দিয়ে ইমেজ, ভিডিও, মিউজিক ও ভয়েস তৈরি শিখুন। বিগিনার থেকে অ্যাডভান্সড লেভেল, লাইভ ক্লাস এবং রিয়েল প্রজেক্ট সহ কমপ্লিট কোর্স। আজই শুরু করুন!')
 @section('keywords', 'AI কোর্স, AI ট্রেনিং, আব্দুর রউফ, Midjourney কোর্স, AI ভিডিও এডিটিং, AI মিউজিক জেনারেশন, ChatGPT কোর্স, AI টুলস বাংলাদেশ')
 
@@ -11,16 +11,89 @@
     class="absolute left-0 top-0 lg:object-contain lg:h-auto">
 <!-- hero ellipse -->
 
-<!-- hero slider section start -->
+<!-- hero section start -->
+@if($siteSettings->hero_display_mode === 'video')
+<!-- Video Mode: Single Full-Screen Video -->
+@php
+    $activeVideo = $heroSlides->firstWhere('type', 'video');
+@endphp
+@if($activeVideo && $activeVideo->video_url)
+<section class="w-full relative overflow-hidden" style="height: 100vh; padding: 0; margin: 0; max-width: none; left: 0; right: 0;">
+    <!-- Include Header -->
+    @include('website.partials.header')
+
+    <!-- YouTube Video Background - No Container -->
+    <div class="absolute inset-0 w-full h-full" style="width: 100vw; left: 0; right: 0; margin: 0; padding: 0;">
+        @php
+            // Extract YouTube video ID
+            $videoId = '';
+            $videoUrl = $activeVideo->video_url;
+
+            if (strpos($videoUrl, 'youtube.com/watch?v=') !== false) {
+                $videoId = explode('v=', $videoUrl)[1] ?? '';
+                $videoId = explode('&', $videoId)[0] ?? '';
+            } elseif (strpos($videoUrl, 'youtu.be/') !== false) {
+                $videoId = explode('youtu.be/', $videoUrl)[1] ?? '';
+                $videoId = explode('?', $videoId)[0] ?? '';
+            }
+        @endphp
+
+        <iframe
+            src="https://www.youtube.com/embed/{{ $videoId }}?autoplay=1&mute=1&loop=1&playlist={{ $videoId }}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&fs=0&iv_load_policy=3&disablekb=1&cc_load_policy=0&hl=en&widget_referrer={{ request()->getSchemeAndHttpHost() }}&enablejsapi=0"
+            class="w-full h-full absolute inset-0 object-cover"
+            frameborder="0"
+            style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; pointer-events: none; min-width: 100%; min-height: 100%; transform: scale(1.01);"
+            allow="autoplay; encrypted-media"
+            allowfullscreen>
+        </iframe>
+
+        <!-- Additional overlay to catch any YouTube UI -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;"></div>
+
+        <!-- Dark Overlay -->
+        <div class="absolute inset-0 bg-[#000]/60"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
+    </div>
+
+    @if($activeVideo->show_content)
+    <!-- Content Overlay -->
+    <div class="container-x relative h-full flex items-center">
+        <div class="max-w-2xl py-20 md:py-28 lg:py-32">
+            <h1
+                class="font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-[#E2E8F0] leading-[120%] mb-4 lg:mb-6">
+                {{ $activeVideo->title }}
+            </h1>
+            <p class="font-normal text-base md:text-lg lg:text-xl text-[#ABABAB] leading-[140%] mb-6 lg:mb-8">
+                {{ $activeVideo->description }}
+            </p>
+            <a href="{{ $activeVideo->button_url ?: route('courses') }}"
+                class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 hover:!bg-lime rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm md:text-base lg:text-lg text-[#fff] gap-x-3 anim hover:text-primary group lg:py-3 lg:px-6">
+                {{ $activeVideo->button_text }}
+            </a>
+        </div>
+    </div>
+    @endif
+
+    <!-- Bottom Gradient Mask for smooth transition -->
+    <div
+        class="absolute bottom-0 left-0 right-0 h-48 md:h-64 lg:h-80 bg-gradient-to-t from-[#0a0a0a] via-[#000]/50 to-transparent z-40 pointer-events-none">
+    </div>
+</section>
+@endif
+
+@else
+<!-- Slider Mode: Image Slider with Multiple Slides -->
+@section('hero_section')
 <section class="w-full relative overflow-hidden" style="height: 100vh;">
 
     <!-- Include Header -->
-@include('website.partials.header')
+    @include('website.partials.header')
     <div class="absolute inset-0 w-full h-full bg-[#000]/50">
     <!-- Hero Slider -->
     <div class="hero-slider relative w-full h-full">
 
         @foreach($heroSlides as $index => $slide)
+        @if($slide->type === 'image')
         <!-- Slide {{ $index + 1 }} -->
         <div class="hero-slide {{ $index === 0 ? 'active' : '' }} absolute inset-0 w-full h-full" style="opacity: {{ $index === 0 ? '1' : '0' }}; z-index: {{ $index === 0 ? '10' : '0' }};">
             <div class="absolute inset-0 w-full h-full">
@@ -44,6 +117,7 @@
                 </div>
             </div>
         </div>
+        @endif
         @endforeach
 
         <!-- Slider Controls -->
@@ -89,7 +163,9 @@
     </div>
     </div>
 </section>
-<!-- hero slider section end -->
+@show
+@endif
+<!-- hero section end -->
 
 <!-- feature section start -->
 <section class="w-full py-10 lg:py-20">
@@ -351,380 +427,72 @@
 <!-- border line -->
 
 <!-- upcommin course section -->
-@if($bootcampConfig)
-<section class="w-full pb-1 lg:pb-10 relative">
+@if($bootcampCourses && $bootcampCourses->count() > 0)
+<section class="w-full py-10 lg:py-20 relative">
     <div class="container-x">
-        <div class="w-full text-center mt-10 md:mt-14 lg:mt-[90px] relative z-[99]">
-            <h1
-                class="inline-flex items-center gap-x-3 bg-[#fff]/10 rounded-md lg:rounded-[10px] py-2 px-3 lg:py-2.5 lg:px-4 font-normal text-sm lg:text-lg text-[#E2E8F0]">
-                <span class="block h-[2px] w-5 bg-line"></span>
-                আপকামিং লাইভ বুটক্যাম্প
-                <span class="block h-[2px] w-5 bg-line-2"></span>
-            </h1>
-            <h2 class="font-bold text-2xl md:text-4xl lg:text-[44px] text-[#E2E8F0] mt-5 lg:mt-[30px]">
-                {!! $bootcampConfig->title !!}
+        <div class="text-center mb-10 md:mb-16">
+            <h2 class="font-bold text-2xl md:text-4xl lg:text-[44px] text-[#E2E8F0]">
+                বুটক্যাম্প কোর্সসমূহ
             </h2>
-            @if($bootcampConfig->description)
-            <p
-                class="font-normal text-sm md:text-base lg:text-xl text-[#ABABAB] leading-[140%] mt-2 lg:mt-3.5 lg:max-w-[60%] lg:mx-auto">
-                {!! $bootcampConfig->description !!}
+            <p class="font-normal text-sm md:text-base lg:text-xl text-[#ABABAB] leading-[140%] mt-2 lg:mt-3.5">
+                আমাদের বিশেষ বুটক্যাম্প কোর্সগুলোতে এনরোল করুন এবং দ্রুত দক্ষ হয়ে উঠুন
             </p>
-            @endif
-
-            <!-- Countdown Timer -->
-            @if($bootcampConfig->countdown_target_date)
-            <div class="flex justify-center gap-x-3 lg:gap-x-5 items-center mt-5 md:mt-10 lg:mt-11">
-                <div
-                    class="inline-flex font-golos justify-center items-center bg-submit border border-[#9F93A7]/70 rounded-md lg:rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-3 anim md:text-base px-3 lg:text-lg lg:py-3 lg:px-5"
-                    id="countdown-timer">
-                    <span id="countdown-days">00</span> Days :
-                    <span id="countdown-hours">00</span> Hours :
-                    <span id="countdown-minutes">00</span> Minutes :
-                    <span id="countdown-seconds">00</span> Seconds
-                </div>
-            </div>
-            <script>
-                (function() {
-                    // Debug: Show what date we're using
-                    const targetDateStr = '{{ $bootcampConfig->countdown_target_date->format('Y-m-d H:i:s') }}';
-                    console.log('📅 Countdown Target Date:', targetDateStr);
-
-                    const targetDate = new Date(targetDateStr).getTime();
-                    const now = new Date().getTime();
-
-                    console.log('🎯 Target Date (Object):', new Date(targetDate));
-                    console.log('📅 Current Date:', new Date(now));
-                    console.log('⏰ Difference (hours):', ((targetDate - now) / (1000 * 60 * 60)).toFixed(2));
-
-                    const daysEl = document.getElementById('countdown-days');
-                    const hoursEl = document.getElementById('countdown-hours');
-                    const minutesEl = document.getElementById('countdown-minutes');
-                    const secondsEl = document.getElementById('countdown-seconds');
-
-                    function update() {
-                        const currentTime = new Date().getTime();
-                        const diff = targetDate - currentTime;
-
-                        if (diff < 0) {
-                            document.getElementById('countdown-timer').innerHTML = 'কোর্স শুরু হয়ে গেছে!';
-                            return;
-                        }
-
-                        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                        const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-                        daysEl.textContent = String(d).padStart(2, '0');
-                        hoursEl.textContent = String(h).padStart(2, '0');
-                        minutesEl.textContent = String(m).padStart(2, '0');
-                        secondsEl.textContent = String(s).padStart(2, '0');
-                    }
-
-                    update();
-                    setInterval(update, 1000);
-                })();
-            </script>
-            @endif
-
-
         </div>
-        <div class="w-full mt-8 md:mt-12 lg:mt-[62px] lg:max-w-[80%] mx-auto">
-            <!-- bootcamp thumbnail -->
-            <div
-                class="w-full bg-[#131620] border border-[#232323] p-3 lg:p-5 rounded-md lg:rounded-[20px]">
-                <div class="w-full relative" id="video-player"
-                    data-video-url="{{ $bootcampConfig->display_video_url ?? '' }}">
-                    <img src="{{ !empty($bootcampConfig->thumbnail_image) ? (strpos($bootcampConfig->thumbnail_image, 'http') === 0 ? $bootcampConfig->thumbnail_image : Storage::url($bootcampConfig->thumbnail_image)) : ($bootcampConfig->course && $bootcampConfig->course->thumbnail_url ? $bootcampConfig->course->thumbnail_url : asset('website-images/speaking-person.webp')) }}"
-                    alt="bootcamp thumbnail"
-                    class="w-full h-[349px] object-cover rounded-md lg:rounded-[10px] lg:h-[700px]">
-                    @if(!empty($bootcampConfig->display_video_url))
-                    <div class="absolute left-0 top-0 w-full h-full flex items-center justify-center">
-                        <button type="button" id="play-video-button"
-                            class="w-12 h-12 lg:w-20 lg:h-20 rounded-full bg-[#fff]/40 flex items-center justify-center p-1 cursor-pointer animate-pulse anim">
-                            <img src="{{ asset('website-images/icons/play.svg') }}" alt="play" class="w-4 lg:w-6">
-                        </button>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            @foreach($bootcampCourses as $bootcampCourse)
+            <a href="{{ route('course.details', $bootcampCourse->slug) }}"
+               class="block bg-card/80 border border-[#49484E]/50 rounded-[10px] overflow-hidden hover:border-orange/50 transition-all duration-300 group">
+                <!-- Bootcamp Feature Image -->
+                <div class="relative w-full h-[200px] md:h-[250px] overflow-hidden">
+                    <img src="{{ $bootcampCourse->bootcamp_feature_image_url ?: $bootcampCourse->thumbnail_url }}"
+                         alt="{{ $bootcampCourse->title }}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="absolute top-3 right-3 bg-orange text-primary px-3 py-1 rounded-full text-sm font-bold">
+                        বুটক্যাম্প
                     </div>
-                    <script>
-                        (function() {
-                            const btn = document.getElementById('play-video-button');
-                            if (btn) {
-                                btn.onclick = function(e) {
-                                    e.preventDefault();
-                                    const videoPlayer = document.getElementById('video-player');
-                                    const videoUrl = videoPlayer.getAttribute('data-video-url');
+                </div>
 
-                                    let videoId = '';
-                                    if (videoUrl.includes('youtube.com/watch?v=')) {
-                                        videoId = videoUrl.split('v=')[1].split('&')[0];
-                                    } else if (videoUrl.includes('youtu.be/')) {
-                                        videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
-                                    }
+                <!-- Course Info -->
+                <div class="p-5">
+                    <h3 class="font-bold text-lg lg:text-xl text-[#E2E8F0] mb-2 line-clamp-2">
+                        {{ $bootcampCourse->title }}
+                    </h3>
 
-                                    if (videoId) {
-                                        videoPlayer.innerHTML = '<iframe width="100%" height="700px" src="https://www.youtube.com/embed/' + videoId + '?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-                                    }
-                                };
-                            }
-                        })();
-                    </script>
+                    @if($bootcampCourse->short_description)
+                    <p class="font-normal text-sm text-[#ABABAB] mb-4 line-clamp-2">
+                        {{ $bootcampCourse->short_description }}
+                    </p>
                     @endif
+
+                    <!-- Instructor & Price -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            @if($bootcampCourse->instructor && $bootcampCourse->instructor->avatar_url)
+                            <img src="{{ $bootcampCourse->instructor->avatar_url }}"
+                                 alt="{{ $bootcampCourse->instructor->name }}"
+                                 class="w-8 h-8 rounded-full object-cover">
+                            @else
+                            <div class="w-8 h-8 rounded-full bg-[#232323] flex items-center justify-center">
+                                <span class="text-xs text-[#ABABAB]">{{ substr($bootcampCourse->instructor?->name ?? 'I', 0, 1) }}</span>
+                            </div>
+                            @endif
+                            <span class="text-sm text-[#E2E8F0]">{{ $bootcampCourse->instructor?->name ?? 'প্রশিক্ষক' }}</span>
+                        </div>
+
+                        @if($bootcampCourse->price && $bootcampCourse->price > 0)
+                        <span class="text-lg font-bold text-orange">৳{{ number_format($bootcampCourse->price) }}</span>
+                        @else
+                        <span class="text-lg font-bold text-green-400">ফ্রি</span>
+                        @endif
+                    </div>
                 </div>
-                <!-- video box -->
-            </div>
+            </a>
+            @endforeach
         </div>
     </div>
 </section>
 @endif
-
-<!-- payment section start -->
-@if($bootcampConfig)
-<section class="w-full py-10 lg:py-20">
-    <div class="container-x">
-        <div
-            class="w-full bg-submit rounded-[10px] py-5 px-6 flex flex-col lg:flex-row justify-center items-center text-center lg:justify-between border border-[#49484E]/50">
-            <div class="lg:text-start">
-                <h5 class="font-medium text-lg white-70 lg:text-2xl">{!! $bootcampConfig->bootcamp_name ?? ($bootcampConfig->course ? $bootcampConfig->course->title : 'বুটক্যাম্প') !!}</h5>
-                @if($bootcampConfig->start_date && $bootcampConfig->end_date)
-                <p class="font-medium text-sm text-[#ABABAB] mt-1 lg:text-base">
-                    {{ $bootcampConfig->start_date->format('d F') }} থেকে {{ $bootcampConfig->end_date->format('d F Y') }} |
-                    প্রশিক্ষক: {{ $bootcampConfig->display_instructor_name }}</p>
-                @endif
-            </div>
-            <h6 class="font-medium text-base text-[#C7C7C7] mt-6 lg:text-2xl lg:mt-0">কোর্স ফি:  <span
-                    class="text-orange font-bold lg:text-3xl">{!! $bootcampConfig->display_price !!}</span> @if($bootcampConfig->display_price !== 'ফ্রি')@endif</h6>
-        </div>
-
-        <div
-            class="w-full bg-card/80 rounded-[10px] py-5 px-4 mt-10 divide-y lg:divide-x lg:divide-y-0 divide-[#fff]/10 lg:p-10 lg:mt-12 grid grid-cols-1 lg:grid-cols-2 lg:gap-x-10 border border-[#49484E]/50">
-            <div class="left pb-10 lg:pb-0">
-                <h3 class="text-center font-medium text-2xl text-[#fff] lg:text-start lg:text-[32px]">এখনই সহজে
-                    পেমেন্ট করুন</h3>
-                <p class="font-medium text-sm text-[#ABABAB] mt-1 text-center lg:text-start lg:text-base lg:max-w-[80%]">
-                    আমাদের কোর্সে ভর্তি হতে পেমেন্ট করা একেবারেই
-                    সহজ। বিকাশ, নগদ বা রকেট দিয়ে পেমেন্ট করলেই সঙ্গে সঙ্গে কোর্স এক্সেস পাবেন।</p>
-
-                <h4 class="mt-10 font-medium text-base white-70 text-center mb-2.5 lg:mt-[60px] lg:text-xl lg:text-start">
-                    এই নম্বরে পেমেন্ট করুন</h4>
- 
-                <div
-                    class="flex bg-[#011330] justify-between items-center max-w-[80%] rounded-[4px] mx-auto p-1.5 pl-4 lg:mx-0 lg:mr-auto lg:max-w-[46%] lg:rounded-lg">
-                    <h5 class="font-bold text-xl text-gradient lg:text-2xl" id="phone-number-display">০১৭১২৩৪৫৬৭৮</h5>
-                    <button type="button" onclick="copyPhoneNumber(); return false;"
-                        class="bg-[#0B2042] rounded-[2px] py-2 px-3 font-normal text-xs text-blue lg:text-sm anim hover:bg-orange hover:text-primary cursor-pointer anim animate-pulse z-50 pointer-events-auto"
-                        style="position: relative; z-index: 1000 !important; pointer-events: auto !important;">কপি
-                        করুন</button>
-                </div> 
-
-                <h6 class="mt-6 font-medium white-70 text-base lg:mt-[30px] lg:text-lg">বিশেষ দ্রষ্টব্য</h6>
-
-                <ul class="mt-2.5 flex flex-col gap-y-1">
-                    <li class="flex items-center gap-x-2">
-                        <span class="w-[2px] h-[2px] block bg-[#D9D9D9] lg:w-[3px] lg:h-[3px]"></span>
-                        <p class="text-sm font-normal text-[#ABABAB] lg:text-base">
-                            Transaction ID সংরক্ষণ করুন, ভুল নম্বরে পাঠালে দায়ভার আমাদের নয়।
-                        </p>
-                    </li>
-                    <li class="flex items-center gap-x-2">
-                        <span class="w-[2px] h-[2px] block bg-[#D9D9D9] lg:w-[3px] lg:h-[3px]"></span>
-                        <p class="text-sm font-normal text-[#ABABAB] lg:text-base">
-                            সফল পেমেন্টে SMS/ইমেইল পাবেন।
-                        </p>
-                    </li>
-                    <li class="flex items-center gap-x-2">
-                        <span class="w-[2px] h-[2px] block bg-[#D9D9D9] lg:w-[3px] lg:h-[3px]"></span>
-                        <p class="text-sm font-normal text-[#ABABAB] lg:text-base">
-                            টাকা ফেরতযোগ্য নয়, সমস্যায় <a href="#" class="text-orange underline">সাপোর্টে
-                                যোগাযোগ করুন।</a>
-                        </p>
-                    </li>
-                </ul>
-            </div>
-            <div class="right pt-10 lg:pt-0">
-                <h5 class="font-medium text-base white-70 text-center mb-2.5 lg:text-lg lg:text-start">আপনার
-                    পেমেন্ট করা মাধ্যমটি বেছে নিন</h5>
-
-                <form id="bootcamp-enrollment-form" method="POST"
-                    class="block mt-5 lg:mt-3 lg:grid lg:grid-cols-12 lg:gap-x-5">
-                    @csrf
-
-                    <!-- Hidden Fields -->
-                    <input type="hidden" name="bootcamp_config_id" value="{{ $bootcampConfig->id }}">
-                    <input type="hidden" name="course_id" value="{{ $bootcampConfig->course_id ?? '' }}">
-                    <div
-                        class="flex w-full justify-between items-center gap-x-2 lg:gap-x-5 lg:justify-start lg:gap-x-6 lg:mb-[60px] lg:col-span-12">
-                        <label for="bootcamp_nagad" class="flex items-center  bg-card anim cursor-pointer px-2 gap-x-2 w-28 h-12">
-                            <input type="radio" name="payment_method" id="bootcamp_nagad" value="nagad" checked>
-                            <img src="{{ asset('website-images/icons/nagad.svg') }}" alt="nagad" class="max-w-14 lg:max-w-20">
-                        </label>
-                        <label for="bootcamp_bkash" class="flex items-center  bg-card anim cursor-pointer px-2 gap-x-2 w-28 h-12">
-                            <input type="radio" name="payment_method" id="bootcamp_bkash" value="bkash">
-                            <img src="{{ asset('website-images/icons/bkash.svg') }}" alt="bkash" class="max-w-14 lg:max-w-20">
-                        </label>
-                        <label for="bootcamp_rocket" class="flex items-center  bg-card anim cursor-pointer px-2 gap-x-2 w-24 h-12">
-                            <input type="radio" name="payment_method" id="bootcamp_rocket" value="rocket">
-                            <img src="{{ asset('website-images/icons/rocket.svg') }}" alt="rocket" class="max-w-10 lg:max-w-12.5">
-                        </label>
-                    </div>
-                    <div class="w-full mt-5 lg:col-span-6">
-                        <label for="bootcamp_name" class="font-medium text-base white-70 block w-full mb-2.5">আপনার
-                            নাম</label>
-                        <input type="text" name="name" id="bootcamp_name" placeholder="নাম"
-                            class="bg-[#000] h-[38px] rounded-sm px-4 w-full text-[#fff] font-medium text-base placeholder:text-gray-400"
-                            required>
-                    </div>
-                    <div class="w-full mt-5 lg:col-span-6">
-                        <label for="bootcamp_email" class="font-medium text-base white-70 block w-full mb-2.5">আপনার
-                            ইমেইল</label>
-                        <input type="email" name="email" id="bootcamp_email" placeholder="ইমেইল"
-                            class="bg-[#000] h-[38px] rounded-sm px-4 w-full text-[#fff] font-medium text-base placeholder:text-gray-400"
-                            required>
-                    </div>
-                    <div class="w-full mt-5 lg:col-span-6">
-                        <label for="bootcamp_payment_number" class="font-medium text-base white-70 block w-full mb-2.5">আপনার
-                            পেমেন্ট নম্বর</label>
-                        <input type="text" name="payment_number" id="bootcamp_payment_number" placeholder="পেমেন্ট নম্বর"
-                            class="bg-[#000] h-[38px] rounded-sm px-4 w-full text-[#fff] font-medium text-base placeholder:text-gray-400"
-                            required>
-                    </div>
-                    <div class="w-full mt-5 lg:col-span-6">
-                        <label for="bootcamp_paid_amount" class="font-medium text-base white-70 block w-full mb-2.5">পেমেন্ট পরিমাণ (টাকা)</label>
-                        <input type="number" name="paid_amount" id="bootcamp_paid_amount" placeholder="পরিমাণ"
-                            class="bg-[#000] h-[38px] rounded-sm px-4 w-full text-[#fff] font-medium text-base placeholder:text-gray-400"
-                            required>
-                    </div>
-                    <div class="w-full mt-5 lg:col-span-6">
-                        <label for="bootcamp_transaction_id" class="font-medium text-base white-70 block w-full mb-2.5">পেমেন্ট ট্রানজেকশন
-                            ID</label>
-                        <input type="text" name="transaction_id" id="bootcamp_transaction_id" placeholder="ট্রানজেকশন ID"
-                            class="bg-[#000] h-[38px] rounded-sm px-4 w-full text-[#fff] font-medium text-base placeholder:text-gray-400"
-                            required>
-                    </div>
-
-                    <div class="w-full flex justify-center lg:col-span-12 lg:justify-end">
-                        <button type="button" id="submit-enrollment-btn"
-                            class="bg-submit hover:!bg-lime hover:text-primary py-2 px-4 font-medium text-base white-70 mt-5 anim cursor-pointer lg:text-xl lg:py-3.5 lg:px-6 rounded-[10px]">কনফার্ম
-                            করুন</button>
-                    </div>
-
-                </form>
-
-                <!-- Message Container -->
-                <div id="enrollment-message" class="hidden mt-5 p-4 rounded-lg text-center"></div>
-
-                <script>
-                    function showMessage(message, isSuccess) {
-                        const messageContainer = document.getElementById('enrollment-message');
-                        messageContainer.classList.remove('hidden');
-
-                        if (isSuccess) {
-                            messageContainer.className = 'mt-5 p-4 rounded-lg text-center bg-green-500/20 border border-green-500/50';
-                            messageContainer.innerHTML = `
-                                <div class="flex items-center justify-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <p class="text-green-400 font-medium text-lg">${message}</p>
-                                </div>
-                            `;
-                        } else {
-                            messageContainer.className = 'mt-5 p-4 rounded-lg text-center bg-red-500/20 border border-red-500/50';
-                            messageContainer.innerHTML = `
-                                <div class="flex items-center justify-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <p class="text-red-400 font-medium text-lg">${message}</p>
-                                </div>
-                            `;
-                        }
-
-                        // Auto hide after 5 seconds
-                        setTimeout(() => {
-                            messageContainer.classList.add('hidden');
-                        }, 5000);
-                    }
-
-                    document.getElementById('submit-enrollment-btn').addEventListener('click', function(e) {
-                        e.preventDefault();
-
-                        // Hide any previous message
-                        document.getElementById('enrollment-message').classList.add('hidden');
-
-                        const form = document.getElementById('bootcamp-enrollment-form');
-                        const formData = new FormData(form);
-                        const submitBtn = this;
-
-                        // Get selected payment method
-                        const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
-                        if (!paymentMethod) {
-                            showMessage('অনুগ্রহ করে পেমেন্টের মাধ্যম নির্বাচন করুন', false);
-                            return;
-                        }
-
-                        // Validate required fields
-                        const name = formData.get('name');
-                        const email = formData.get('email');
-                        const paymentNumber = formData.get('payment_number');
-                        const transactionId = formData.get('transaction_id');
-                        const paidAmount = formData.get('paid_amount');
-
-                        if (!name || !email || !paymentNumber || !transactionId || !paidAmount) {
-                            showMessage('অনুগ্রহ করে সকল তথ্য পূরণ করুন', false);
-                            return;
-                        }
-
-                        // Disable submit button
-                        submitBtn.disabled = true;
-                        submitBtn.textContent = 'জমা হচ্ছে...';
-
-                        // Convert FormData to object
-                        const data = {
-                            payment_method: paymentMethod.value,
-                            name: name,
-                            email: email,
-                            payment_number: paymentNumber,
-                            transaction_id: transactionId,
-                            paid_amount: paidAmount,
-                            course_id: formData.get('course_id') || null
-                        };
-
-                        fetch('{{ route("bootcamp.enroll") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify(data)
-                        })
-                        .then(response => response.json())
-                        .then(result => {
-                            if (result.success) {
-                                showMessage(result.message, true);
-                                form.reset();
-                                // Reset payment method selection to first option
-                                document.getElementById('bootcamp_nagad').checked = true;
-                            } else {
-                                showMessage(result.message || 'দুঃখিত, আপনার রিকোয়েস্ট জমা দেওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।', false);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showMessage('দুঃখিত, একটি ত্রুটি হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।', false);
-                        })
-                        .finally(() => {
-                            // Re-enable submit button
-                            submitBtn.disabled = false;
-                            submitBtn.textContent = 'কনফার্ম করুন';
-                        });
-                    });
-                </script>
-            </div>
-        </div>
-    </div>
-</section>
-@endif
-<!-- payment section end -->
 
 <!-- get start section start -->
 <section class="w-full py-10 lg:py-20">
@@ -733,11 +501,23 @@
         <div class="text-center mb-10 md:mb-16 lg:mb-20">
 
             <h2 class="font-bold text-2xl md:text-4xl lg:text-[44px] text-[#E2E8F0] mt-5 lg:mt-[30px]">
-                আপনার আইডিয়াকে বদলে দিন <span class="text-gradient"> এআই ক্রিয়েশনে </span></h2>
+                @if($siteSettings->cta_outer_title)
+                    {!! $siteSettings->cta_outer_title !!}
+                @else
+                    আপনার আইডিয়াকে বদলে দিন <span class="text-gradient"> এআই ক্রিয়েশনে </span>
+                @endif
+            </h2>
+            @if($siteSettings->cta_outer_subtitle)
+            <p
+                class="font-normal text-sm md:text-base lg:text-xl text-[#ABABAB] leading-[140%] mt-2 lg:mt-3.5 lg:max-w-[65%] lg:mx-auto">
+                {!! $siteSettings->cta_outer_subtitle !!}
+            </p>
+            @else
             <p
                 class="font-normal text-sm md:text-base lg:text-xl text-[#ABABAB] leading-[140%] mt-2 lg:mt-3.5 lg:max-w-[65%] lg:mx-auto">
                 সঠিক পদ্ধতিতে, ধাপে ধাপে এবং কৌশল ব্যবহার করে আপনার স্কিলকে দ্রুত দক্ষ করে তুলুন
             </p>
+            @endif
         </div>
 
         <div class="get-bg relative py-12 px-8 lg:py-[94px] lg:px-[220px] rounded-[20px] lg:min-h-[365px]">
@@ -748,22 +528,46 @@
                     class="rounded-tr-[20px] rounded-br-[20px] max-w-[50%] lg:object-contain">
             </div>
             <div class="text-center relative z-30 w-full">
+                @if($siteSettings->cta_inner_title)
+                <h2 class="font-bold text-2xl lg:text-[44px] text-[#fff] leading-[120%] mb-1">{!! $siteSettings->cta_inner_title !!}</h2>
+                @else
                 <h2 class="font-bold text-2xl lg:text-[44px] text-[#fff] leading-[120%] mb-1">ক্রিয়েটিভিটির ভবিষ্যৎ
                     <span class="text-gradient">এখন আপনার হাতে</span>
                 </h2>
+                @endif
+                @if($siteSettings->cta_inner_subtitle)
+                <p class="font-normal text-sm md:text-base lg:text-xl text-[#ABABAB] leading-[120%]">{!! $siteSettings->cta_inner_subtitle !!}</p>
+                @else
                 <p class="font-normal text-sm md:text-base lg:text-xl text-[#ABABAB] leading-[120%]">RoufAI প্ল্যাটফর্মে এখনই যুক্ত হোন, হয়ে উঠুন এআই-চালিত ক্রিয়েটিভ প্রফেশনাল।</p>
+                @endif
 
                 <div class="flex justify-center items-center gap-x-4  mt-5 lg:mt-10 lg:gap-x-5">
+                    @if($siteSettings->cta_button1_text)
+                    <a href="{{ $siteSettings->cta_button1_url ?: route('courses') }}"
+                        class="inline-flex font-golos justify-center items-center bg-submit rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-2.5 anim
+               hover:!bg-lime md:text-base px-2 lg:text-lg hover:text-primary group lg:my-0 lg:order-1 border border-[#9F93A7]/70 lg:py-3 lg:px-6">
+                        {!! $siteSettings->cta_button1_text !!}
+                    </a>
+                    @else
                     <a href="{{ route('courses') }}"
                         class="inline-flex font-golos justify-center items-center bg-submit rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-2.5 anim
                hover:!bg-lime md:text-base px-2 lg:text-lg hover:text-primary group lg:my-0 lg:order-1 border border-[#9F93A7]/70 lg:py-3 lg:px-6">
                         এখনই এনরোল করুন
                     </a>
+                    @endif
+                    @if($siteSettings->cta_button2_text)
+                    <a href="{{ $siteSettings->cta_button2_url ?: route('courses') }}"
+                        class="inline-flex font-golos justify-center items-center bg-black rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-2.5 anim
+                 md:text-base lg:text-lg hover:text-orange px-2 group lg:my-0 lg:order-1 border border-[#9F93A7]/70 lg:py-3 lg:px-6">
+                        {!! $siteSettings->cta_button2_text !!}
+                    </a>
+                    @else
                     <a href="{{ route('courses') }}"
                         class="inline-flex font-golos justify-center items-center bg-black rounded-[10px] p-1.5 font-medium text-sm text-[#fff] gap-x-2.5 anim
                  md:text-base lg:text-lg hover:text-orange px-2 group lg:my-0 lg:order-1 border border-[#9F93A7]/70 lg:py-3 lg:px-6">
                         সার্টিফিকেট পান
                     </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -791,6 +595,30 @@
         opacity: 1 !important;
         pointer-events: auto;
         z-index: 10;
+    }
+
+    /* Hide YouTube UI elements */
+    iframe[src*="youtube"] {
+        border: none !important;
+    }
+
+    /* Hide any YouTube overlays or suggestions */
+    .ytp-gradient-top,
+    .ytp-gradient-bottom,
+    .ytp-chrome-top,
+    .ytp-chrome-bottom,
+    .html5-video-player .ytp-title,
+    .html5-video-player .ytp-share-button,
+    .html5-video-player .ytp-share-title,
+    .html5-video-player .ytp-share-icon,
+    .ytp-large-play-button,
+    .ytp-preview-ad,
+    .ytp-cards-teaser,
+    .iv-branding,
+    .ytp-videowall-still-info {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
 </style>
 <script>

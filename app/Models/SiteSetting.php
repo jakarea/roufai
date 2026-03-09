@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class SiteSetting extends Model
 {
@@ -25,6 +26,16 @@ class SiteSetting extends Model
         'about_us_url',
         'copyright_text',
         'developer_credit_text',
+        'hero_display_mode',
+        'logo',
+        'cta_outer_title',
+        'cta_outer_subtitle',
+        'cta_inner_title',
+        'cta_inner_subtitle',
+        'cta_button1_text',
+        'cta_button1_url',
+        'cta_button2_text',
+        'cta_button2_url',
     ];
 
     /**
@@ -48,6 +59,19 @@ class SiteSetting extends Model
     public function getFormattedPhoneAttribute(): string
     {
         return preg_replace('/[^0-9+]/', '', $this->contact_phone ?? '');
+    }
+
+    /**
+     * Get logo URL with fallback
+     */
+    public function getLogoUrlAttribute(): string
+    {
+        if (filled($this->logo) && Storage::exists($this->logo)) {
+            return Storage::url($this->logo);
+        }
+
+        // Fallback to default logo
+        return asset('website-images/logo.png');
     }
 }
 

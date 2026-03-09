@@ -25,13 +25,16 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        $siteSettings = \App\Models\SiteSetting::getSettings();
+        $logoUrl = $siteSettings->logo_url ?? asset('website-images/logo.webp');
+
         return $panel
             ->default()
             ->id('admin')
             ->path('/admin')
-            ->brandName('Rouf AI')
-            ->brandLogo(asset('website-images/logo.webp'))
-            ->darkModeBrandLogo(asset('website-images/logo-white.webp'))
+            ->brandName('RoufAi Academy')
+            ->brandLogo($logoUrl)
+            ->darkModeBrandLogo($logoUrl)
             ->brandLogoHeight('3.25rem')
             ->unsavedChangesAlerts()
             ->font('Lato')

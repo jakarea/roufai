@@ -21,9 +21,6 @@ Route::get('/ai-update/{slug}', [BlogController::class, 'show'])->name('blog.sho
 Route::get('/courses/{id}/enroll', [WebsiteController::class, 'showEnrollmentPage'])->name('courses.enroll.page');
 Route::post('/courses/{id}/enroll', [WebsiteController::class, 'enroll'])->name('courses.enroll');
 
-// Bootcamp enrollment request (guest users can submit)
-Route::post('/bootcamp/enroll', [WebsiteController::class, 'submitBootcampEnrollment'])->name('bootcamp.enroll');
-
 // Common login page for all users
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');

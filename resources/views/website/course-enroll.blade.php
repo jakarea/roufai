@@ -2,7 +2,7 @@
 
 @use('Illuminate\Support\Facades\Storage')
 
-@section('title', 'এনরোল করুন - ' . $course->title . ' | আব্দুর রউফ')
+@section('title', 'RoufAi Academy | Enroll - ' . $course->title)
 @section('description', $course->title . ' কোর্সে এনরোল করুন। ' . ($course->type === 'FREE' ? 'ফ্রি কোর্স' : 'পেইড কোর্স') . ' - লাইভ ক্লাস, ভিডিও টিউটোরিয়াল এবং সার্টিফিকেট সহ কমপ্লিট লার্নিং।')
 @section('keywords', $course->title . ', কোর্স এনরোলমেন্ট, AI কোর্স ভর্তি, ' . ($course->type === 'FREE' ? 'ফ্রি AI কোর্স' : 'পেইড AI কোর্স'))
 

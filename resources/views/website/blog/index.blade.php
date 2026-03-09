@@ -2,7 +2,7 @@
 
 @use('Illuminate\Support\Str')
 
-@section('title', 'AI আপডেট - এআই খবর, টিপস ও ট্রেন্ডস | আব্দুর রউফ')
+@section('title', 'RoufAi Academy | AI Updates')
 @section('description', 'এআই ইন্ডাস্ট্রির সর্বশেষ আপডেট, খবর, টিউটোরিয়াল এবং ট্রেন্ডস জানুন। ChatGPT, Midjourney, AI টুলস সম্পর্কে নিয়মিত আপডেট পান।')
 @section('keywords', 'AI আপডেট, AI খবর, ChatGPT আপডেট, AI টিউটোরিয়াল, Midjourney গাইড, AI ট্রেন্ডস, AI টুলস বাংলাদেশ')
 

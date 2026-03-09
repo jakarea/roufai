@@ -6,7 +6,7 @@
                 <!-- logo -->
                 <div class="flex-shrink-0">
                     <a href="{{ route('home') }}">
-                        <img src="{{ asset('website-images/logo.png') }}" alt="logo" class="max-w-20 md:max-w-[95px] lg:max-w-[110px]">
+                        <img src="{{ $siteSettings->logo_url ?? asset('website-images/logo.png') }}" alt="logo" class="max-w-20 md:max-w-[95px] lg:max-w-[110px]">
                     </a>
                 </div>
 

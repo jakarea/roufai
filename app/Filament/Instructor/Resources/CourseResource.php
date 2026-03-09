@@ -40,7 +40,7 @@ class CourseResource extends Resource
             ->schema([
                 // STEP 1: Course Information
                 Forms\Components\Section::make('Course Information')
-                    ->description('Step 1 of 2: Basic information about your course')
+                    ->description('Step 1 of 3: Basic information about your course')
                     ->schema([
                         Forms\Components\Select::make('category_id')
                             ->relationship('category', 'name')
@@ -118,9 +118,39 @@ class CourseResource extends Resource
                     ])
                     ->columns(2),
 
-                // STEP 2: Modules & Lessons
+                // STEP 2: Bootcamp Settings (Optional)
+                Forms\Components\Section::make('Bootcamp Settings')
+                    ->description('Step 2 of 3: Optional - Enable bootcamp features for this course')
+                    ->schema([
+                        Forms\Components\Toggle::make('is_bootcamp')
+                            ->label('Enable Bootcamp')
+                            ->helperText('Enable this to treat the course as a bootcamp with special features')
+                            ->reactive()
+                            ->default(false)
+                            ->columnSpanFull(),
+                        Forms\Components\FileUpload::make('bootcamp_feature_image')
+                            ->label('Bootcamp Feature Image')
+                            ->helperText('Upload a feature image that will be displayed on the home page (required for bootcamps)')
+                            ->image()
+                            ->imageEditor()
+                            ->directory('bootcamp-features')
+                            ->visibility('public')
+                            ->maxSize(5120) // 5MB
+                            ->required(fn (callable $get) => $get('is_bootcamp'))
+                            ->visible(fn (callable $get) => $get('is_bootcamp'))
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('show_on_homepage')
+                            ->label('Show on Homepage')
+                            ->helperText('If enabled, this bootcamp will be displayed on the home page')
+                            ->visible(fn (callable $get) => $get('is_bootcamp'))
+                            ->default(false)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+
+                // STEP 3: Modules & Lessons
                 Forms\Components\Section::make('Modules & Lessons')
-                    ->description('Step 2 of 2: Add modules and lessons to your course')
+                    ->description('Step 3 of 3: Add modules and lessons to your course')
                     ->schema([
                         Forms\Components\Repeater::make('modules')
                             ->relationship()
@@ -230,6 +260,15 @@ class CourseResource extends Resource
                         'warning' => 'PAID',
                     ])
                     ->sortable(),
+                Tables\Columns\IconColumn::make('is_bootcamp')
+                    ->label('Bootcamp')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-fire')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('danger')
+                    ->falseColor('gray')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Price (BDT)')
                     ->money('bdt')
@@ -255,6 +294,11 @@ class CourseResource extends Resource
                         'FREE' => 'FREE',
                         'PAID' => 'PAID',
                     ]),
+                Tables\Filters\TernaryFilter::make('is_bootcamp')
+                    ->label('Bootcamp')
+                    ->placeholder('All courses')
+                    ->trueLabel('Bootcamps only')
+                    ->falseLabel('Regular courses only'),
                 Tables\Filters\TernaryFilter::make('is_published')
                     ->label('Published')
                     ->nullable(),

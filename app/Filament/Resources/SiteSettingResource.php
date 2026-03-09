@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SiteSettingResource\Pages;
 use App\Filament\Resources\SiteSettingResource\RelationManagers;
 use App\Models\SiteSetting;
+use App\Models\HeroSlide;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class SiteSettingResource extends Resource
 {
@@ -29,6 +31,74 @@ class SiteSettingResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make('Hero Section')
+                    ->description('Configure how the homepage hero section is displayed')
+                    ->schema([
+                        Forms\Components\Select::make('hero_display_mode')
+                            ->label('Hero Display Mode')
+                            ->options([
+                                'slider' => 'Image Slider Mode',
+                                'video' => 'Video Mode',
+                            ])
+                            ->required()
+                            ->default('slider')
+                            ->reactive()
+                            ->helperText('Choose how the hero section appears on the homepage')
+                            ->afterStateUpdated(function ($state, $set, $get, $record) {
+                                // When mode changes, activate/deactivate slides accordingly
+                                if ($record && $record->exists) {
+                                    $oldMode = $record->getOriginal('hero_display_mode');
+                                    $newMode = $state;
+
+                                    if ($oldMode !== $newMode) {
+                                        if ($newMode === 'video') {
+                                            // Switch to video mode
+                                            HeroSlide::where('type', 'image')->update(['is_active' => false]);
+                                            $firstVideo = HeroSlide::where('type', 'video')->orderBy('order_index')->first();
+                                            if ($firstVideo) {
+                                                HeroSlide::where('type', 'video')->update(['is_active' => false]);
+                                                $firstVideo->is_active = true;
+                                                $firstVideo->save();
+                                            }
+
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('Switched to Video Mode')
+                                                ->body('One video is now active. All image slides have been deactivated.')
+                                                ->warning()
+                                                ->send();
+                                        } else {
+                                            // Switch to image slider mode
+                                            HeroSlide::where('type', 'video')->update(['is_active' => false]);
+                                            HeroSlide::where('type', 'image')->update(['is_active' => true]);
+
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('Switched to Image Slider Mode')
+                                                ->body('All image slides are now active. Video slides have been deactivated.')
+                                                ->success()
+                                                ->send();
+                                        }
+                                    }
+                                }
+                            })
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+
+                Forms\Components\Section::make('Brand Identity')
+                    ->description('Upload your logo to use across the entire platform')
+                    ->schema([
+                        Forms\Components\FileUpload::make('logo')
+                            ->label('Website Logo')
+                            ->image()
+                            ->imageEditor()
+                            ->directory('logos')
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
+                            ->helperText('Upload your logo (max 2MB). Supported formats: PNG, JPG, WEBP. If no logo is uploaded, the default logo will be used.')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+
                 Forms\Components\Section::make('Company Information')
                     ->description('Manage your company information that appears on the website')
                     ->schema([
@@ -103,6 +173,54 @@ class SiteSettingResource extends Resource
                             ->helperText('Leave empty to use default route')
                             ->url()
                             ->maxLength(255),
+                    ])
+                    ->columns(1),
+
+                Forms\Components\Section::make('CTA Section')
+                    ->description('Configure the Call-to-Action section on the homepage')
+                    ->schema([
+                        Forms\Components\TextInput::make('cta_outer_title')
+                            ->label('Outer Title')
+                            ->placeholder('আপনার আইডিয়াকে বদলে দিন এআই ক্রিয়েশনে')
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('cta_outer_subtitle')
+                            ->label('Outer Subtitle')
+                            ->rows(2)
+                            ->placeholder('সঠিক পদ্ধতিতে, ধাপে ধাপে এবং কৌশল ব্যবহার করে আপনার স্কিলকে দ্রুত দক্ষ করে তুলুন')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('cta_inner_title')
+                            ->label('Inner Title')
+                            ->placeholder('ক্রিয়েটিভিটির ভবিষ্যৎ এখন আপনার হাতে')
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('cta_inner_subtitle')
+                            ->label('Inner Subtitle')
+                            ->rows(2)
+                            ->placeholder('RoufAI প্ল্যাটফর্মে এখনই যুক্ত হোন, হয়ে উঠুন এআই-চালিত ক্রিয়েটিভ প্রফেশনাল।')
+                            ->columnSpanFull(),
+                        Forms\Components\Section::make('Buttons')
+                            ->schema([
+                                Forms\Components\TextInput::make('cta_button1_text')
+                                    ->label('Button 1 Text')
+                                    ->placeholder('এখনই এনরোল করুন')
+                                    ->maxLength(255)
+                                    ->columnSpan(1),
+                                Forms\Components\TextInput::make('cta_button1_url')
+                                    ->label('Button 1 URL')
+                                    ->placeholder('/courses or https://example.com')
+                                    ->helperText('Enter a URL (e.g., https://example.com) or a path (e.g., /courses)')
+                                    ->columnSpan(1),
+                                Forms\Components\TextInput::make('cta_button2_text')
+                                    ->label('Button 2 Text')
+                                    ->placeholder('সার্টিফিকেট পান')
+                                    ->maxLength(255)
+                                    ->columnSpan(1),
+                                Forms\Components\TextInput::make('cta_button2_url')
+                                    ->label('Button 2 URL')
+                                    ->placeholder('/courses or https://example.com')
+                                    ->helperText('Enter a URL (e.g., https://example.com) or a path (e.g., /courses)')
+                                    ->columnSpan(1),
+                            ])
+                            ->columns(2),
                     ])
                     ->columns(1),
 
