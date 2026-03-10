@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Artisan;
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -183,5 +184,66 @@ class AuthController extends Controller
             'student' => redirect('/student/dashboard'),
             default => redirect('/'),
         };
+    }
+
+    /**
+     * Redirect the user to the Google authentication page.
+     */
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    /**
+     * Obtain the user information from Google.
+     */
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+
+            // Check if user already exists with this Google ID
+            $user = User::where('google_id', $googleUser->id)->first();
+
+            if ($user) {
+                // User exists, log them in
+                Auth::login($user);
+                return $this->redirectBasedOnRole($user);
+            }
+
+            // Check if user exists with same email
+            $existingUser = User::where('email', $googleUser->email)->first();
+
+            if ($existingUser) {
+                // Link Google account to existing user
+                $existingUser->update([
+                    'google_id' => $googleUser->id,
+                    'google_avatar' => $googleUser->avatar,
+                    'google_token' => $googleUser->token,
+                ]);
+
+                Auth::login($existingUser);
+                return $this->redirectBasedOnRole($existingUser);
+            }
+
+            // Create new user
+            $newUser = User::create([
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'google_id' => $googleUser->id,
+                'google_avatar' => $googleUser->avatar,
+                'google_token' => $googleUser->token,
+                'password' => Hash::make(Str::random(24)), // Random password
+                'role' => 'student', // Default role
+            ]);
+
+            Auth::login($newUser);
+            return redirect()->route('student.dashboard')
+                ->with('success', 'স্বাগতম! আপনি সফলভাবে Google দিয়ে নিবন্ধিত হয়েছেন।');
+
+        } catch (\Exception $e) {
+            return redirect()->route('login')
+                ->with('error', 'Google login failed. Please try again or use email login.');
+        }
     }
 }

@@ -29,6 +29,9 @@ class User extends Authenticatable
         'phone',
         'address',
         'total_learning_time',
+        'google_id',
+        'google_avatar',
+        'google_token',
     ];
 
     /**
@@ -39,6 +42,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_token',
     ];
 
     /**

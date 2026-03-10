@@ -42,4 +42,11 @@ return [
         'sender_id' => env('SMS_SENDER_ID', 'RoufAI'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URL'),
+        'stateless' => true,
+    ],
+
 ];

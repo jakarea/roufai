@@ -37,6 +37,10 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name(
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
+// Google OAuth routes
+Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
 // Student routes (protected by auth and role middleware)
 Route::middleware(['auth', 'role:student'])->prefix('student')->group(function () {
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
@@ -134,9 +138,28 @@ Route::get('/debug-auth', function () {
     // Environment
     $output['APP_ENV'] = config('app.env');
     $output['APP_URL'] = config('app.url');
+    $output['Google Redirect URL'] = config('services.google.redirect');
 
     return response()->json($output, 200, [], JSON_PRETTY_PRINT);
 })->name('debug.auth');
+
+// Debug route to check Google OAuth URL
+Route::get('/debug-google', function () {
+    $socialite = app('Laravel\Socialite\Contracts\Factory');
+    $url = $socialite->driver('google')->stateless()->redirect()->getTargetUrl();
+
+    // Parse the URL to extract redirect_uri parameter
+    $parsedUrl = parse_url($url);
+    parse_str($parsedUrl['query'] ?? '', $params);
+
+    return response()->json([
+        'full_google_url' => $url,
+        'redirect_uri' => $params['redirect_uri'] ?? 'not found',
+        'client_id' => $params['client_id'] ?? 'not found',
+        'config_redirect' => config('services.google.redirect'),
+        'app_url' => config('app.url'),
+    ], 200, [], JSON_PRETTY_PRINT);
+})->name('debug.google');
 
 // Test instructor panel access
 Route::get('/test-instructor-access', function () {
